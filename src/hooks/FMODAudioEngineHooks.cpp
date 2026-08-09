@@ -44,7 +44,7 @@ class $modify(MyFMODAudioEngine, FMODAudioEngine) {
         // When not in a level, don't apply any offset or redirect to padded files.
         if (lso::utils::offset::shouldSkipOffset(getTotalOffset())) {
             LOG_MOD_DEBUG("queueStartMusic: skipping hook because not in a level");
-            s_paddedTracks.setOriginal(musicID, channelID);
+            s_paddedTracks.setOriginal(channelID);
             FMODAudioEngine::queueStartMusic(
                 path, pitch, unknown, volume, loop, start, end,
                 fadeIn, fadeOut, musicID, p10, channelID, noPrepare, dontReset
@@ -87,7 +87,7 @@ class $modify(MyFMODAudioEngine, FMODAudioEngine) {
             }
         }
         
-        s_paddedTracks.setPaddedFlag(isMusicPadded, musicID, channelID);
+        s_paddedTracks.setPaddedFlag(isMusicPadded, channelID);
 
         // Because we can't distinguish between queued music that was already prepared (noPrepare=false) and queued music that is being prepared now (noPrepare=true), we only apply the offset to the start time when noPrepare=true. This ensures that we don't double-apply the offset in the case where the music is already prepared.
         if (totalOffset != 0 && noPrepare) {
@@ -112,7 +112,7 @@ class $modify(MyFMODAudioEngine, FMODAudioEngine) {
 
         if (lso::utils::offset::shouldSkipOffset(getTotalOffset())) {
             LOG_MOD_DEBUG("startMusic: skipping hook because not in a level");
-            s_paddedTracks.setOriginal(musicID, 0);
+            s_paddedTracks.setOriginal(0);
             FMODAudioEngine::startMusic(start, end, fadeIn, fadeOut, loop, musicID, noResume, dontReset);
             return;
         }
@@ -143,7 +143,7 @@ class $modify(MyFMODAudioEngine, FMODAudioEngine) {
         int totalOffset = getTotalOffset();
         if (lso::utils::offset::shouldSkipOffset(totalOffset)) {
             LOG_MOD_DEBUG("loadAndPlayMusic: skipping hook because not in a level");
-            s_paddedTracks.setOriginal(musicID, 0);
+            s_paddedTracks.setOriginal(0);
             FMODAudioEngine::loadAndPlayMusic(path, time, musicID);
             return;
         }
@@ -172,10 +172,10 @@ class $modify(MyFMODAudioEngine, FMODAudioEngine) {
             }
         }
 
-        s_paddedTracks.setPaddedFlag(isMusicPadded, musicID, 0);
+        s_paddedTracks.setPaddedFlag(isMusicPadded, 0);
 
         // Apply offset
-        bool isPadded = s_paddedTracks.isPaddedByMusicID(musicID);
+        bool isPadded = s_paddedTracks.m_isPaddedNow;
         auto offset = applyOffset(static_cast<int>(time), isPadded);
         newTime = static_cast<unsigned int>(offset.adjustedTime);
         
@@ -228,26 +228,8 @@ class $modify(MyFMODAudioEngine, FMODAudioEngine) {
             FMODAudioEngine::setMusicTimeMS(ms, p1, channel);
             return;
         }
-
-        // bool isPadded = s_paddedTracks.isPaddedByChannel(channel);
+        // Flag set in last getAudioFileName call
         bool isPadded = s_paddedTracks.m_isPaddedNow;
-
-        // If channel lookup failed, check if any song of the current level
-        // is using a padded file (via musicID tracking from getAudioFileName).
-        if (!isPadded && totalOffset < 0) {
-            geode::log::warn("setMusicTimeMS: channel {} not found in padded tracks, checking current level songs", channel);
-            if (auto* pl = PlayLayer::get()) {
-                if (pl->m_level) {
-                    for (int key : lso::utils::getLevelSongKeys(pl->m_level)) {
-                        if (s_paddedTracks.isPaddedByMusicID(key)) {
-                            isPadded = true;
-                            s_paddedTracks.setPadded(key, channel);
-                            break;
-                        }
-                    }
-                }
-            }
-        }
 
         auto offset = applyOffset(ms, isPadded);
         if (isPadded || offset.adjustedTime != static_cast<int>(ms)) {
