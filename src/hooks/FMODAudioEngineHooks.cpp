@@ -176,9 +176,10 @@ class $modify(MyFMODAudioEngine, FMODAudioEngine) {
             FMODAudioEngine::triggerQueuedMusic(music);
             return;
         }
-
         // bool isPadded = s_paddedTracks.isPaddedByChannel(music.m_channelID);
-        bool isPadded = s_paddedTracks.m_isPaddedNow;
+        // bool isPadded = s_paddedTracks.m_isPaddedNow;
+        bool isPadded = lso::utils::isFilePadded(music.m_filePath);
+
         auto offset = applyOffset(music.m_start, isPadded);
         if (isPadded || offset.adjustedTime != music.m_start) {
             LOG_MOD_DEBUG("triggerQueuedMusic: applying offset to m_start ({} -> {}), channel={}, padded={}",
