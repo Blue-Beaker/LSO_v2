@@ -42,6 +42,10 @@ int getSongKey(GJGameLevel* level) {
     return (level->m_songID != 0) ? level->m_songID : (-level->m_audioTrack - 1);
 }
 
+int getSongID(int musicID, gd::string path){
+    return musicID != 0 ? musicID : extractSongIdFromPath(path);
+}
+
 int extractSongIdFromPath(gd::string path) {
     // Get the stem (filename without extension)
     auto filenameWithoutExt = lso::utils::getFileNameWithoutExtension(path);

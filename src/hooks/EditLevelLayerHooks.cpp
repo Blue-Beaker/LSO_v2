@@ -7,8 +7,6 @@
 
 using namespace geode::prelude;
 
-// ─── EditLevelLayer hook ────────────────────────────────────────────────────
-
 class $modify(OffsetEditLevelLayer, EditLevelLayer) {
 	struct Fields {
 		OffsetButton* offsetBtn = nullptr;

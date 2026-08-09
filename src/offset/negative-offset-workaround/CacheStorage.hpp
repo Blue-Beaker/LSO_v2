@@ -18,6 +18,8 @@ unsigned long hashSourcePath(const gd::string sourcePath);
 
 // Get the song key for a GJGameLevel's current song.
 int getSongKey(GJGameLevel* level);
+// Get the song key from a music ID, and fallback to path.
+int getSongID(int musicID, gd::string path);
 
 // @geode-ignore(unknown-resource)
 // Try to extract a numeric song ID from a path like "123456.mp3".

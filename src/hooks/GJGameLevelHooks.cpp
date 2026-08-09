@@ -8,15 +8,6 @@
 
 using namespace geode::prelude;
 
-// ─── Hook: GJGameLevel::getAudioFileName ─────────────────────────────────────
-// Compute the padded file path on the fly from the original audio path.
-// If the total offset is negative and the padded file exists, return it;
-// otherwise return the original.
-//
-// IMPORTANT: Only redirect when totalOffset < 0. If a padded file from a
-// previous session still exists but the user has since set a positive (or
-// zero) offset, we must NOT use the padded file.
-
 class $modify(NegativeOffsetGJGameLevel, GJGameLevel) {
     gd::string getAudioFileName() {
         auto original = GJGameLevel::getAudioFileName();
