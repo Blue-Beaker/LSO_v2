@@ -10,6 +10,9 @@ using namespace geode::prelude;
 
 class $modify(NegativeOffsetGJGameLevel, GJGameLevel) {
     gd::string getAudioFileName() {
+        // Sets padded flag
+        s_paddedTracks.m_isPaddedNow = false;
+
         auto original = GJGameLevel::getAudioFileName();
         if (original.empty()) return original;
         int totalOffset = getTotalOffset();
@@ -31,6 +34,7 @@ class $modify(NegativeOffsetGJGameLevel, GJGameLevel) {
             // can detect this track uses a padded file, even if queueStartMusic
             // hook doesn't get called.
             s_paddedTracks.setPaddedByMusicID(songKey);
+            s_paddedTracks.m_isPaddedNow = true;
             return gd::string(paddedPath.string());
         }
 

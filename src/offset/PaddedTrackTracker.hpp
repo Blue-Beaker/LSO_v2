@@ -52,12 +52,21 @@ struct PaddedTrackTracker {
         return m_byChannelID.contains(channelID);
     }
 
+    void setPaddedFlag(bool padded, int musicID, int channelID) {
+        if(padded){
+            setPadded(musicID,channelID);
+        }else{
+            setOriginal(musicID,channelID);
+        }
+    }
+
     // Clear all tracking (e.g. on level exit).
     void clear() {
         std::lock_guard lock(m_mutex);
         m_byMusicID.clear();
         m_byChannelID.clear();
     }
+    bool m_isPaddedNow = false;
 
 private:
     mutable std::mutex m_mutex;
