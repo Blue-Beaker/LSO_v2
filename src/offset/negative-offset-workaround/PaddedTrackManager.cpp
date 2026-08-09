@@ -7,6 +7,10 @@ PaddedTrackManager PaddedTrackManager::get(){
 }
 
 PaddedResult PaddedTrackManager::getPaddedResult(int totalOffset, gd::string path){
+    return PaddedTrackManager::getPaddedResult(0,totalOffset,path);
+}
+
+PaddedResult PaddedTrackManager::getPaddedResult(int songKey, int totalOffset, gd::string path){
     PaddedResult result;
     result.resultingPath=path;
 
@@ -15,7 +19,9 @@ PaddedResult PaddedTrackManager::getPaddedResult(int totalOffset, gd::string pat
         return result;
     }
     // Not a padded file - Redirect to padded file if it exists, otherwise fallback to original.
-    int songKey = extractSongIdFromPath(path);
+    if(songKey==0){
+        songKey = extractSongIdFromPath(path);
+    }
     auto paddedPath = getPaddedPath(songKey, totalOffset, path);
 
     std::error_code ec;
