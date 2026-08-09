@@ -39,8 +39,11 @@ class $modify(MyFMODAudioEngine, FMODAudioEngine) {
                          int fadeOut, int musicID, bool p10,
                          int channelID, bool noPrepare,
                          bool dontReset) {
-        // When not in a level or totalOffset==0, don't apply any offset or redirect to padded files.
+
+        LOG_MOD_DEBUG("queueStartMusic: path={}, musicID={}, channelID={}",path,musicID,channelID);
+        // When not in a level, don't apply any offset or redirect to padded files.
         if (lso::utils::offset::shouldSkipOffset(getTotalOffset())) {
+            LOG_MOD_DEBUG("queueStartMusic: skipping hook because not in a level");
             s_paddedTracks.setOriginal(musicID, channelID);
             FMODAudioEngine::queueStartMusic(
                 path, pitch, unknown, volume, loop, start, end,
@@ -50,7 +53,7 @@ class $modify(MyFMODAudioEngine, FMODAudioEngine) {
         }
         
         // The new modified values to pass to the original function. We will modify these as needed.
-        gd::string newPath = path;
+        gd::string newPath = gd::string(path);
         int newStart = start;
         int newEnd = end;
 
@@ -68,16 +71,20 @@ class $modify(MyFMODAudioEngine, FMODAudioEngine) {
             // Already a padded file - set padded state and apply remainder
             if (lso::utils::isFilePadded(path)) {
                 isMusicPadded = true;
-            }
-            // Not a padded file - Redirect to padded file if it exists, otherwise fallback to original.
-            int songKey = getSongID(musicID, path);
-            auto paddedPath = getPaddedPath(songKey, totalOffset,path);
+                LOG_MOD_DEBUG("queueStartMusic: padded = true because of path {}", path);
+            }else{
+                // Not a padded file - Redirect to padded file if it exists, otherwise fallback to original.
+                int songKey = getSongID(musicID, path);
+                auto paddedPath = getPaddedPath(songKey, totalOffset,path);
 
-            std::error_code ec;
-            if(std::filesystem::exists(paddedPath, ec)){
-                isMusicPadded = true;
-                newPath = paddedPath.string();
-            };
+                std::error_code ec;
+                bool exists = std::filesystem::exists(paddedPath, ec);
+                LOG_MOD_DEBUG("queueStartMusic: originalPath={}, paddedPath='{}', exists={}", path, paddedPath, exists);
+                if(exists){
+                    isMusicPadded = true;
+                    newPath = paddedPath.string();
+                };
+            }
         }
         
         s_paddedTracks.setPaddedFlag(isMusicPadded, musicID, channelID);
@@ -89,7 +96,7 @@ class $modify(MyFMODAudioEngine, FMODAudioEngine) {
         }
         
         if(start!=newStart || isMusicPadded){
-            LOG_MOD_DEBUG("queueStartMusic: applying offset {} to start ({} -> {}), path=('{}' -> '{}'), musicID={}, padded={}", totalOffset, start, newStart, path, newPath, musicID, isMusicPadded);
+            LOG_MOD_DEBUG("queueStartMusic: applying offset {} to start ({} -> {}), noPrepare={}, path=('{}' -> '{}'), musicID={}, padded={}", totalOffset, start, newStart, noPrepare, path, newPath, musicID, isMusicPadded);
         }
         FMODAudioEngine::queueStartMusic(
             newPath, pitch, unknown, volume, loop, newStart, newEnd,
@@ -101,8 +108,10 @@ class $modify(MyFMODAudioEngine, FMODAudioEngine) {
     // queueStartMusic is NOT called in that path, so we need this hook.
     void startMusic(int start, int end, int fadeIn, int fadeOut,
                     bool loop, int musicID, bool noResume, bool dontReset) {
+        LOG_MOD_DEBUG("startMusic: musicID={}",musicID);
 
         if (lso::utils::offset::shouldSkipOffset(getTotalOffset())) {
+            LOG_MOD_DEBUG("startMusic: skipping hook because not in a level");
             s_paddedTracks.setOriginal(musicID, 0);
             FMODAudioEngine::startMusic(start, end, fadeIn, fadeOut, loop, musicID, noResume, dontReset);
             return;
@@ -110,14 +119,13 @@ class $modify(MyFMODAudioEngine, FMODAudioEngine) {
 
         int newStart = start;
 
-        bool isPadded = s_paddedTracks.isPaddedByMusicID(musicID);
+        bool isPadded = s_paddedTracks.m_isPaddedNow;
         auto offset = applyOffset(start, isPadded);
 
         newStart=offset.adjustedTime;
         
         if(isPadded || start!=newStart){
-            LOG_MOD_DEBUG("startMusic: applying offset ({} -> {}), musicID={}, padded={}",
-                        start, newStart, musicID, isPadded);
+            LOG_MOD_DEBUG("startMusic: applying offset ({} -> {}), musicID={}, padded={}", start, newStart, musicID, isPadded);
         }
 
         FMODAudioEngine::startMusic(
@@ -130,9 +138,11 @@ class $modify(MyFMODAudioEngine, FMODAudioEngine) {
     // Called by song triggers mid-level to switch music.
     // Needs to check for padded files just like queueStartMusic.
     void loadAndPlayMusic(gd::string path, unsigned int time, int musicID) {
+        LOG_MOD_DEBUG("loadAndPlayMusic: path={}, musicID={}", path, musicID);
 
         int totalOffset = getTotalOffset();
         if (lso::utils::offset::shouldSkipOffset(totalOffset)) {
+            LOG_MOD_DEBUG("loadAndPlayMusic: skipping hook because not in a level");
             s_paddedTracks.setOriginal(musicID, 0);
             FMODAudioEngine::loadAndPlayMusic(path, time, musicID);
             return;
@@ -146,14 +156,19 @@ class $modify(MyFMODAudioEngine, FMODAudioEngine) {
         if (lso::config::shouldDoNegativeOffsetWorkaround(totalOffset)) {
             if (lso::utils::isFilePadded(path)) {
                 isMusicPadded = true;
-            }
-            int songKey = getSongID(musicID, path);
-            auto paddedPath = getPaddedPath(songKey, totalOffset, path);
-            std::error_code ec;
+                LOG_MOD_DEBUG("loadAndPlayMusic: padded = true because of path {}", path);
+            }else{
+                int songKey = getSongID(musicID, path);
+                auto paddedPath = getPaddedPath(songKey, totalOffset, path);
 
-            if (std::filesystem::exists(paddedPath, ec)) {
-                isMusicPadded = true;
-                newPath = paddedPath.string();
+                std::error_code ec;
+                bool exists = std::filesystem::exists(paddedPath, ec);
+                LOG_MOD_DEBUG("loadAndPlayMusic: originalPath={}, paddedPath='{}', exists={}", path, paddedPath, exists);
+
+                if (exists) {
+                    isMusicPadded = true;
+                    newPath = paddedPath.string();
+                }
             }
         }
 
@@ -165,8 +180,7 @@ class $modify(MyFMODAudioEngine, FMODAudioEngine) {
         newTime = static_cast<unsigned int>(offset.adjustedTime);
         
         if(isPadded || time!=newTime){
-            LOG_MOD_DEBUG("loadAndPlayMusic: applying offset ({} -> {}), path=('{}' -> '{}'), padded={}",
-                        time, newTime, path, newPath, isPadded);
+            LOG_MOD_DEBUG("loadAndPlayMusic: applying offset ({} -> {}), path=('{}' -> '{}'), padded={}", time, newTime, path, newPath, isPadded);
         }
         
         FMODAudioEngine::loadAndPlayMusic(
@@ -184,8 +198,10 @@ class $modify(MyFMODAudioEngine, FMODAudioEngine) {
     // We cannot distinguish between these, so we always apply offset.
 
     void triggerQueuedMusic(FMODQueuedMusic music) {
+        LOG_MOD_DEBUG("triggerQueuedMusic: musicID={}, channelID={}", music.m_musicID,music.m_channelID);
 
         if(lso::utils::offset::shouldSkipOffset(getTotalOffset())){
+            LOG_MOD_DEBUG("triggerQueuedMusic: skipping hook because not in a level");
             FMODAudioEngine::triggerQueuedMusic(music);
             return;
         }
@@ -197,7 +213,7 @@ class $modify(MyFMODAudioEngine, FMODAudioEngine) {
             LOG_MOD_DEBUG("triggerQueuedMusic: applying offset to m_start ({} -> {}), channel={}, padded={}",
                       music.m_start, offset.adjustedTime, music.m_channelID, isPadded);
         }
-        music.m_start = offset.adjustedTime;
+        // music.m_start = offset.adjustedTime;
         FMODAudioEngine::triggerQueuedMusic(music);
     }
 
@@ -205,8 +221,10 @@ class $modify(MyFMODAudioEngine, FMODAudioEngine) {
     // Seeks music to a given time. Used by checkpoint restoration, pause, etc.
 
     void setMusicTimeMS(unsigned int ms, bool p1, int channel) {
+        LOG_MOD_DEBUG("setMusicTimeMS: channelID={}", channel);
         int totalOffset = getTotalOffset();
         if(lso::utils::offset::shouldSkipOffset(totalOffset)){
+            LOG_MOD_DEBUG("setMusicTimeMS: skipping hook because not in a level");
             FMODAudioEngine::setMusicTimeMS(ms, p1, channel);
             return;
         }
@@ -233,8 +251,7 @@ class $modify(MyFMODAudioEngine, FMODAudioEngine) {
 
         auto offset = applyOffset(ms, isPadded);
         if (isPadded || offset.adjustedTime != static_cast<int>(ms)) {
-            LOG_MOD_DEBUG("setMusicTimeMS: {} -> {} (channel={}, padded={}, totalOffset={})",
-                      ms, offset.adjustedTime, channel, isPadded, totalOffset);
+            LOG_MOD_DEBUG("setMusicTimeMS: {} -> {} (channel={}, padded={}, totalOffset={})", ms, offset.adjustedTime, channel, isPadded, totalOffset);
         }
         FMODAudioEngine::setMusicTimeMS(
             static_cast<unsigned int>(offset.adjustedTime), p1, channel

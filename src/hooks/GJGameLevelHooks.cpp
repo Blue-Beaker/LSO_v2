@@ -33,7 +33,6 @@ class $modify(NegativeOffsetGJGameLevel, GJGameLevel) {
             // Set padded state via musicID so that hooks like setMusicTimeMS
             // can detect this track uses a padded file, even if queueStartMusic
             // hook doesn't get called.
-            s_paddedTracks.setPaddedByMusicID(songKey);
             s_paddedTracks.m_isPaddedNow = true;
             return gd::string(paddedPath.string());
         }

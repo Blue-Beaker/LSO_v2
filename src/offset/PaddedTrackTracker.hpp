@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../utils/Utils.hpp"
+
 #include <unordered_set>
 #include <mutex>
 
@@ -43,6 +45,7 @@ struct PaddedTrackTracker {
     // Check by musicID.
     bool isPaddedByMusicID(int musicID) const {
         std::lock_guard lock(m_mutex);
+        LOG_MOD_DEBUG("Checking isPaddedByMusicID - musicID:{}, tracked:{}",musicID,m_byMusicID.size());
         return musicID > 0 && m_byMusicID.contains(musicID);
     }
 

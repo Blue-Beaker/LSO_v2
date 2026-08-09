@@ -193,8 +193,7 @@ void AsyncPregenerator::processTask(const PregenerateTask& task) {
         return;
     }
 
-    LOG_MOD_DEBUG("processTask: generating padded file for song key {} from '{}'",
-              task.songKey, task.sourcePath);
+    LOG_MOD_DEBUG("processTask: generating padded file for song key {} from '{}'", task.songKey, task.sourcePath);
 
     // Mark this song key as in-progress so callers know the file may be incomplete
     {
@@ -231,8 +230,7 @@ void AsyncPregenerator::processTask(const PregenerateTask& task) {
     }
 
     if (created) {
-        LOG_MOD_DEBUG("AsyncPregenerator: created padded file for song key {}: {}",
-                  task.songKey, paddedPath.string());
+        LOG_MOD_DEBUG("AsyncPregenerator: created padded file for song key {}: {}", task.songKey, paddedPath.string());
     } else {
         log::warn("AsyncPregenerator: failed to create padded file for song key {}",
                   task.songKey);
@@ -262,8 +260,7 @@ std::vector<PregenerateTask> collectPregenerateTasks(GJGameLevel* level, int tot
 
         if (!std::filesystem::exists(originalPath)) continue;
 
-        LOG_MOD_DEBUG("collectPregenerateTasks: song key {}, source '{}'",
-                  songKey, originalPath);
+        LOG_MOD_DEBUG("collectPregenerateTasks: song key {}, source '{}'", songKey, originalPath);
 
         auto paddedPath = getPaddedPath(songKey, totalOffset, originalPath);
         std::error_code ec;

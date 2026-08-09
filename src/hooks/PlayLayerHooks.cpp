@@ -33,8 +33,7 @@ class $modify(MyPlayLayer, PlayLayer) {
             int originalOffset = FMODAudioEngine::sharedEngine()->m_musicOffset;
             int totalOffset = originalOffset + userOffset;
 
-            LOG_MOD_DEBUG("prepareMusic: level={}, userOffset={}, originalOffset={}, totalOffset={}",
-                      lso::utils::getLevelId(m_level), userOffset, originalOffset, totalOffset);
+            LOG_MOD_DEBUG("prepareMusic: level={}, userOffset={}, originalOffset={}, totalOffset={}", lso::utils::getLevelId(m_level), userOffset, originalOffset, totalOffset);
 
             setTotalOffset(totalOffset);
 

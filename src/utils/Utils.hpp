@@ -4,8 +4,6 @@
 
 using namespace geode::prelude;
 
-#define LOG_MOD_DEBUG(...) if (Mod::get()->getSettingValue<bool>("debug-logging")){geode::log::info(__VA_ARGS__);};
-
 namespace lso::utils{
     // ─── Level ID resolution ────────────────────────────────────────────────────
 
@@ -62,3 +60,5 @@ namespace lso::config{
         return Mod::get()->getSettingValue<bool>("debug-logging");
     }
 }
+
+#define LOG_MOD_DEBUG(...) if (lso::config::isDebugLoggingEnabled()){geode::log::info(__VA_ARGS__);};

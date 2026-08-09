@@ -19,9 +19,11 @@ using namespace geode::prelude;
 // GD songs directory. Nong songs (e.g. from jukebox) are stored elsewhere
 // with arbitrary filenames.
 static bool isOriginalSongPath(const gd::string sourcePath) {
-    auto stem = lso::utils::getFileNameWithoutExtension(sourcePath);
-    // Check if stem is all digits
-    return !stem.empty() && stem.find_first_not_of("0123456789") == gd::string::npos;
+    auto path = std::filesystem::path(sourcePath);
+
+    LOG_MOD_DEBUG("Checking isOriginalSongPath - path: {}",path);
+
+    return path.stem().string().find_first_not_of("0123456789") == gd::string::npos;
 }
 
 unsigned long hashSourcePath(const gd::string sourcePath) {
@@ -84,11 +86,17 @@ std::filesystem::path getPaddedPath(int songKey, int totalOffset, const gd::stri
     int absTotal = std::abs(totalOffset);
     int paddedLengthMs = ((absTotal + 999) / 1000) * 1000;
     auto pathHash = hashSourcePath(sourcePath);
+    std::filesystem::path newPath;
     if (pathHash == 0) {
-        // Original GD song - use songKey-only naming for backward compat
-        return getCacheDir() / fmt::format("padded_{}_{}.wav", songKey, paddedLengthMs);
+        // Original GD song: padded_ID_paddedLength.wav
+        newPath = getCacheDir() / fmt::format("padded_{}_{}.wav", songKey, paddedLengthMs);
+    }else{
+        // NONG song: padded_ID_HASH_paddedLength.wav
+        newPath = getCacheDir() / fmt::format("padded_{}_{:x}_{}.wav", songKey, pathHash, paddedLengthMs);
     }
-    return getCacheDir() / fmt::format("padded_{}_{:x}_{}.wav", songKey, pathHash, paddedLengthMs);
+
+    // LOG_MOD_DEBUG("getPaddedPath: songKey {}, totalOffset {}, sourcePath {} -> {}", songKey, totalOffset, sourcePath, newPath);
+    return newPath;
 }
 
 // ─── Cache collection helpers ──────────────────────────────────────────────────
@@ -107,34 +115,35 @@ CacheCollection collectRemovableCacheFiles(const std::unordered_set<std::filesys
     CacheCollection result;
     std::error_code dirEc;
 
-    if (std::filesystem::exists(cacheDir, dirEc)) {
+    auto allFiles = geode::utils::file::readDirectory(cacheDir);
+
+    if (allFiles.isOk()) {
         LOG_MOD_DEBUG("collectRemovableCacheFiles: cache dir exists, starting directory scan");
-        for (auto& entry : std::filesystem::directory_iterator(cacheDir, dirEc)) {
+        for (auto& entry : allFiles.asOk().unwrap()) {
             if (dirEc) {
                 LOG_MOD_DEBUG("collectRemovableCacheFiles: directory iterator error: {}", dirEc.message());
                 break;
             }
-            if (!entry.is_regular_file(dirEc)) continue;
-            if (dirEc) break;
+            if (!std::filesystem::is_regular_file(entry, dirEc)) continue;
+            if (dirEc) { dirEc.clear(); continue; }
 
-            auto& p = entry.path();
-            auto name = p.filename().string();
-            if (name.find("padded_") != 0 || p.extension() != ".wav") continue;
+            auto name = entry.filename().string();
+            if (name.find("padded_") != 0 || entry.extension() != ".wav") continue;
 
             result.totalFiles++;
 
             // Skip excluded files
-            if (excludedNorm.count(p.lexically_normal())) {
+            if (excludedNorm.count(entry.lexically_normal())) {
                 result.excludedCount++;
                 continue;
             }
 
-            auto ft = entry.last_write_time(dirEc);
+            auto ft = std::filesystem::last_write_time(entry,dirEc);
             if (dirEc) { dirEc.clear(); continue; }
-            auto fs = entry.file_size(dirEc);
+            auto fs = std::filesystem::file_size(entry,dirEc);
             if (dirEc) { dirEc.clear(); continue; }
 
-            result.removable.push_back({entry.path(), ft, fs});
+            result.removable.push_back({entry, ft, fs});
             result.totalSize += fs;
         }
     }
@@ -162,8 +171,7 @@ uintmax_t deleteOldestFiles(std::vector<FileEntry>& files, uintmax_t target) {
         if (!rmEc) {
             freed += entry.size;
             deleted++;
-            LOG_MOD_DEBUG("  Deleted {} ({:.1f} MB)", entry.path.filename().string(),
-                      static_cast<double>(entry.size) / (1024.0 * 1024.0));
+            LOG_MOD_DEBUG("  Deleted {} ({:.1f} MB)", entry.path.filename().string(), static_cast<double>(entry.size) / (1024.0 * 1024.0));
         } else {
             log::warn("Failed to delete {}: {}", entry.path.string(), rmEc.message());
         }
