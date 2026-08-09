@@ -185,7 +185,7 @@ class $modify(MyFMODAudioEngine, FMODAudioEngine) {
             LOG_MOD_DEBUG("triggerQueuedMusic: applying offset to m_start ({} -> {}), channel={}, padded={}",
                       music.m_start, offset.adjustedTime, music.m_channelID, isPadded);
         }
-        // music.m_start = offset.adjustedTime;
+        music.m_start = offset.adjustedTime;
         FMODAudioEngine::triggerQueuedMusic(music);
     }
 
