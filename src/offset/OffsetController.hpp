@@ -15,6 +15,9 @@ using namespace geode::prelude;
  *   EditLevelLayerHooks.cpp  - OffsetEditLevelLayer
  */
 
+// Set current level, to track the offset
+void setCurrentLevel(GJGameLevel* currentLevel);
+GJGameLevel* getCurrentLevel();
 // Set total offset for the controller.
 void setTotalOffset(int totalOffset);
 int getTotalOffset();

@@ -9,12 +9,25 @@
 // and setMusicTimeMS hooks.
 // totalOffset = original GameManager::m_timeOffset + user offset.
 int s_currentTotalOffset = 0;
+GJGameLevel* s_currentLevel = nullptr;
+
+void setCurrentLevel(GJGameLevel* currentLevel){
+    s_currentLevel=currentLevel;
+}
+GJGameLevel* getCurrentLevel(){
+    return s_currentLevel;
+}
 
 void setTotalOffset(int totalOffset) {
     s_currentTotalOffset = totalOffset;
 }
 int getTotalOffset() {
-    return s_currentTotalOffset;
+    int originalOffset = FMODAudioEngine::sharedEngine()->m_musicOffset;
+    if(s_currentLevel==nullptr){
+        return originalOffset;
+    }
+    int levelOffset = OffsetStorage::getOffsetForLevel(lso::utils::getLevelId(s_currentLevel));
+    return originalOffset + levelOffset;
 }
 
 // ─── Public: start pre-generation for a level ───────────────────────────────

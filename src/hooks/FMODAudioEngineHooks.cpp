@@ -61,9 +61,6 @@ class $modify(MyFMODAudioEngine, FMODAudioEngine) {
         // When in a level, apply offset and redirect to padded files if necessary.
 
         int totalOffset = getTotalOffset();
-
-        bool fixEnabled = lso::config::isNegativeOffsetFixEnabled();
-
         // bool isMusicPadded = false;
         bool isMusicPadded = s_paddedTracks.m_isPaddedNow;
 
