@@ -8,27 +8,7 @@
 
 using namespace geode::prelude;
 
-/**
- * Manages the padded WAV file cache for the negative offset workaround.
- *
- * Padded files are created by prepending silence to the original audio so
- * that negative offsets can be handled by shifting playback start time.
- *
- * Cache files are named: padded_{songKey}_{pathHash}_{intervalMs}.wav
- *   - songKey    = m_songID (custom song) or -m_audioTrack - 1 (built-in)
- *   - pathHash   = hash of the source audio file path (handles nong songs)
- *   - intervalMs = ceil(abs(totalOffset) / 1000) * 1000
- *
- * Using a path hash ensures each unique audio file (including jukebox nongs
- * that share the same GD song ID) gets its own padded cache file.
- *
- * All padded file paths are computed on the fly - no registry needed.
- * Responsibilities:
- *   - Path computation: getPaddedPath()
- *   - Cache directory resolution: getCacheDir()
- *   - Cache size enforcement: enforceCacheSizeLimit()
- *   - Song key helpers: getSongKey(), extractSongIdFromPath()
- */
+// Padded audio file cache manager for negative offset workaround. Handles file naming, cache size limit, and cleanup.
 
 // Compute a hash for a source audio file path.
 // Used to distinguish nong songs that share the same GD song ID.
@@ -74,10 +54,10 @@ struct CacheCollection {
 };
 
 // Scan the cache directory and collect removable padded WAV files.
-// Files in \p excludedFiles are skipped.
+// Files in excludedFiles are skipped.
 CacheCollection collectRemovableCacheFiles(const std::unordered_set<std::filesystem::path>& excludedFiles);
 
-// Delete files from \c collection (sorted oldest-first) until \p target bytes are freed.
+// Delete files from collection (sorted oldest-first) until target bytes are freed.
 // Returns the number of bytes actually freed.
 uintmax_t deleteOldestFiles(std::vector<FileEntry>& files, uintmax_t target);
 

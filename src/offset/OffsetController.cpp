@@ -1,6 +1,6 @@
 #include "OffsetController.hpp"
 #include "OffsetStorage.hpp"
-#include "negative-offset-workaround/negativeOffsetWorkaround.hpp"
+#include "negative-offset-workaround/wavHelper.hpp"
 #include "negative-offset-workaround/AsyncPregenerator.hpp"
 #include "../utils/Utils.hpp"
 
@@ -10,11 +10,18 @@
 // totalOffset = original GameManager::m_timeOffset + user offset.
 int s_currentTotalOffset = 0;
 
+void setTotalOffset(int totalOffset) {
+    s_currentTotalOffset = totalOffset;
+}
+int getTotalOffset() {
+    return s_currentTotalOffset;
+}
+
 // ─── Public: start pre-generation for a level ───────────────────────────────
 
 void startPregenerateForLevel(GJGameLevel* level) {
     if (!level) return;
-    bool fixEnabled = Mod::get()->getSettingValue<bool>("negative-offset-fix");
+    bool fixEnabled = lso::config::isNegativeOffsetFixEnabled();;
     if (!fixEnabled) return;
 
     auto* audio = FMODAudioEngine::sharedEngine();

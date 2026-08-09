@@ -6,9 +6,9 @@
 		"mac": "2.2081",
 		"ios": "2.2081"
 	},
-	"id": "bluebeaker.level_song_offset_2",
+	"id": "bluebeaker.level_song_offset",
 	"name": "Level Song Offset 2",
-	"version": "v1.0.0",
+	"version": "v2.0.0",
 	"developer": "BlueBeaker",
 	"description": "",
 	"links": {
@@ -28,8 +28,15 @@
 		"padded-cache-path": {
 			"name": "Negative Offset Audio Cache",
 			"description": "Custom directory for storing padded audio cache files for the negative offset workaround. Leave empty to use the mod's save directory",
-			"type": "string",
-			"default": ""
+			"type": "folder",
+			"default": {
+				"win": "{mod_save_dir}/padded-audio-cache",
+				"mac": "{mod_save_dir}/padded-audio-cache",
+				"android": "{mod_save_dir}/padded-audio-cache"
+			},
+			"control": {
+				"dialog": "save"
+			}
 		},
 		"padded-cache-max-size": {
 			"name": "Max Audio Cache Size (MB)",

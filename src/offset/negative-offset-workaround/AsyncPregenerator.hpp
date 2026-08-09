@@ -12,22 +12,7 @@
 
 using namespace geode::prelude;
 
-/**
- * Asynchronous pre-generation of padded audio files for the negative offset
- * workaround.
- *
- * Each song key gets its own thread for parallel processing. Progress is
- * reported via a callback so the UI can display feedback (e.g. a loading
- * popup with per-song progress).
- *
- * Usage:
- *   auto& gen = AsyncPregenerator::get();
- *   gen.generate({{837148, -1500}, {123456, -1500}},
- *       [](int completed, int total, const gd::string& status) {
- *           // Update UI
- *       });
- *   gen.waitAll(); // optional: block until all done
- */
+
 
 // Represents one song to pre-generate.
 struct PregenerateTask {

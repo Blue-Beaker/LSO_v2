@@ -1,6 +1,6 @@
 #include "AsyncPregenerator.hpp"
 #include "CacheStorage.hpp"
-#include "negativeOffsetWorkaround.hpp"
+#include "wavHelper.hpp"
 #include "../../utils/Utils.hpp"
 
 #include <algorithm>
@@ -202,7 +202,7 @@ void AsyncPregenerator::processTask(const PregenerateTask& task) {
         m_inProgressKeys.insert(task.songKey);
     }
 
-    int intervalMs = ((std::abs(task.totalOffset) + 999) / 1000) * 1000;
+    int paddedLengthMs = lso::utils::offset::calculatePaddedLength(task.totalOffset);
     bool created = false;
 
     {
@@ -211,7 +211,7 @@ void AsyncPregenerator::processTask(const PregenerateTask& task) {
         m_progress[idx].progress = 0.3f;
     }
 
-    created = createPaddedWavFile(task.sourcePath, paddedPath, intervalMs);
+    created = createPaddedWavFile(task.sourcePath, paddedPath, paddedLengthMs);
 
     {
         std::lock_guard<std::mutex> lock(m_mutex);
@@ -245,7 +245,7 @@ std::vector<PregenerateTask> collectPregenerateTasks(GJGameLevel* level, int tot
     std::vector<PregenerateTask> tasks;
     if (!level || totalOffset >= 0) return tasks;
 
-    bool fixEnabled = Mod::get()->getSettingValue<bool>("negative-offset-fix");
+    bool fixEnabled = lso::config::isNegativeOffsetFixEnabled();;
     if (!fixEnabled) return tasks;
 
     auto* mdm = MusicDownloadManager::sharedState();

@@ -15,6 +15,9 @@ using namespace geode::prelude;
  *   EditLevelLayerHooks.cpp  - OffsetEditLevelLayer
  */
 
+// Set total offset for the controller.
+void setTotalOffset(int totalOffset);
+int getTotalOffset();
 // Start async pre-generation of padded audio files for a level's songs.
 // If generation is already running, this call is silently ignored.
 // Safe to call multiple times - already-cached files are skipped.

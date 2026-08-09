@@ -3,10 +3,10 @@
 #include "../offset/negative-offset-workaround/CacheStorage.hpp"
 #include "../offset/negative-offset-workaround/AsyncPregenerator.hpp"
 #include "../offset/PaddedTrackTracker.hpp"
+#include "../offset/OffsetController.hpp"
+#include "../utils/Utils.hpp"
 
 using namespace geode::prelude;
-
-extern int s_currentTotalOffset;
 
 // ─── Hook: GJGameLevel::getAudioFileName ─────────────────────────────────────
 // Compute the padded file path on the fly from the original audio path.
@@ -21,11 +21,10 @@ class $modify(NegativeOffsetGJGameLevel, GJGameLevel) {
     gd::string getAudioFileName() {
         auto original = GJGameLevel::getAudioFileName();
         if (original.empty()) return original;
-
-        // Only redirect to padded file when offset is actually negative
-        if (s_currentTotalOffset >= 0) return original;
-        bool fixEnabled = Mod::get()->getSettingValue<bool>("negative-offset-fix");
-        if (!fixEnabled) return original;
+        int totalOffset = getTotalOffset();
+        // Only redirect to padded file when should
+        bool shouldRedirect = lso::config::shouldDoNegativeOffsetWorkaround(totalOffset);
+        if (!shouldRedirect) return original;
 
         auto* fileUtils = CCFileUtils::sharedFileUtils();
         gd::string fullPath = fileUtils->fullPathForFilename(original.c_str(), false);
@@ -33,7 +32,7 @@ class $modify(NegativeOffsetGJGameLevel, GJGameLevel) {
         auto srcPath = std::filesystem::path(fullPath);
         int songKey = getSongKey(this);
 
-        auto paddedPath = getPaddedPath(songKey, s_currentTotalOffset, fullPath);
+        auto paddedPath = getPaddedPath(songKey, totalOffset, fullPath);
         std::error_code ec;
         if (std::filesystem::exists(paddedPath, ec)) {
             log::debug("Using padded audio: {}", paddedPath.string());

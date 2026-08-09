@@ -2,15 +2,12 @@
 
 #include "../offset/OffsetController.hpp"
 #include "../offset/OffsetStorage.hpp"
-#include "../offset/negative-offset-workaround/negativeOffsetWorkaround.hpp"
+#include "../offset/negative-offset-workaround/wavHelper.hpp"
 #include "../offset/negative-offset-workaround/AsyncPregenerator.hpp"
 #include "../utils/Utils.hpp"
 #include "../offset/negative-offset-workaround/CacheStorage.hpp"
 
 using namespace geode::prelude;
-
-// ─── Shared: total offset for current PlayLayer ─────────────────────────────
-extern int s_currentTotalOffset;
 
 // ─── Hook: PlayLayer ────────────────────────────────────────────────────────
 
@@ -39,9 +36,9 @@ class $modify(MyPlayLayer, PlayLayer) {
             LOG_MOD_DEBUG("prepareMusic: level={}, userOffset={}, originalOffset={}, totalOffset={}",
                       lso::utils::getLevelId(m_level), userOffset, originalOffset, totalOffset);
 
-            s_currentTotalOffset = totalOffset;
+            setTotalOffset(totalOffset);
 
-            if (totalOffset < 0 && Mod::get()->getSettingValue<bool>("negative-offset-fix")) {
+            if (lso::config::shouldDoNegativeOffsetWorkaround(totalOffset)) {
                 auto& pregen = AsyncPregenerator::get();
                 if (pregen.isRunning()) {
                     LOG_MOD_DEBUG("prepareMusic: waiting for pre-generation...");

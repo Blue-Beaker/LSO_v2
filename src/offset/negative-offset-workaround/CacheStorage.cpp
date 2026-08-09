@@ -44,11 +44,7 @@ int getSongKey(GJGameLevel* level) {
 
 int extractSongIdFromPath(gd::string path) {
     // Get the stem (filename without extension)
-    auto parts = geode::utils::string::split(path, "/");
-    if (parts.empty()) return -1;
-
-    auto filename = parts[parts.size() - 1];
-    auto filenameWithoutExt = geode::utils::string::split(filename, ".")[0];
+    auto filenameWithoutExt = lso::utils::getFileNameWithoutExtension(path);
 
     // Try to parse as integer
     int id = 0;
@@ -60,46 +56,35 @@ int extractSongIdFromPath(gd::string path) {
 }
 
 std::filesystem::path getCacheDir() {
-    auto customPath = Mod::get()->getSettingValue<std::string>("padded-cache-path");
-    if (!customPath.empty()) {
-        if (customPath[0] == '/') {
-            std::string winePath = "Z:";
-            for (char c : customPath) {
-                if (c == '/') winePath += '\\';
-                else winePath += c;
-            }
-            std::filesystem::path wp(winePath);
-            std::error_code wec;
-            std::filesystem::create_directories(wp, wec);
-            if (!wec) {
-                LOG_MOD_DEBUG("getCacheDir: mapped Linux path '{}' to Wine path '{}'",
-                           customPath, winePath);
-                return wp;
-            }
-        }
-
-        std::filesystem::path p(customPath);
-        std::error_code ec;
-        if (std::filesystem::exists(p, ec)) {
-            return p;
-        }
-
-        std::filesystem::create_directories(p, ec);
-        if (!ec) return p;
-        log::warn("Custom cache path invalid, falling back to save dir: {}", ec.message());
+    std::filesystem::path customPath = Mod::get()->getSettingValue<std::filesystem::path>("padded-cache-path");
+    if (customPath.empty()) {
+        return Mod::get()->getSaveDir() / "padded_audio_cache";
     }
-    return Mod::get()->getSaveDir();
+
+    std::filesystem::path path1(customPath);
+
+    auto result1 = geode::utils::file::readDirectory(path1, false);
+    if(result1.isOk()){
+        return path1;
+    }
+
+    auto result2 = geode::utils::file::createDirectoryAll(path1);
+    if(result2.isOk()){
+        return path1;
+    }
+    log::warn("Custom cache path invalid, falling back to save dir.");
+    return Mod::get()->getSaveDir() / "padded_audio_cache";
 }
 
 std::filesystem::path getPaddedPath(int songKey, int totalOffset, const gd::string sourcePath) {
     int absTotal = std::abs(totalOffset);
-    int intervalMs = ((absTotal + 999) / 1000) * 1000;
+    int paddedLengthMs = ((absTotal + 999) / 1000) * 1000;
     auto pathHash = hashSourcePath(sourcePath);
     if (pathHash == 0) {
         // Original GD song - use songKey-only naming for backward compat
-        return getCacheDir() / fmt::format("padded_{}_{}.wav", songKey, intervalMs);
+        return getCacheDir() / fmt::format("padded_{}_{}.wav", songKey, paddedLengthMs);
     }
-    return getCacheDir() / fmt::format("padded_{}_{:x}_{}.wav", songKey, pathHash, intervalMs);
+    return getCacheDir() / fmt::format("padded_{}_{:x}_{}.wav", songKey, pathHash, paddedLengthMs);
 }
 
 // ─── Cache collection helpers ──────────────────────────────────────────────────
@@ -158,7 +143,7 @@ CacheCollection collectRemovableCacheFiles(const std::unordered_set<std::filesys
     return result;
 }
 
-// Delete files from \c collection (sorted oldest-first) until \p target bytes are freed.
+// Delete files from collection (sorted oldest-first) until target bytes are freed.
 // Returns the number of bytes actually freed.
 uintmax_t deleteOldestFiles(std::vector<FileEntry>& files, uintmax_t target) {
     // Sort oldest-first

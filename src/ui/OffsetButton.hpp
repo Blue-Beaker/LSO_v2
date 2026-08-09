@@ -4,14 +4,7 @@
 
 using namespace geode::prelude;
 
-/**
- * A wrapper around the offset icon button that can update its displayed offset value.
- *
- * Usage:
- *   auto btn = OffsetButton::create(target, selector, levelId);
- *   btn->update();       // refresh the label from storage
- *   btn->setOffset(42);  // set a new offset and refresh
- */
+// A wrapper around the offset icon button that can update its displayed offset value.
 class OffsetButton : public CCMenuItemSpriteExtra {
 protected:
     int m_levelId;
