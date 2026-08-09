@@ -4,6 +4,7 @@
 #include "../offset/OffsetCalculator.hpp"
 #include "../offset/PaddedTrackTracker.hpp"
 #include "../offset/negative-offset-workaround/CacheStorage.hpp"
+#include "../offset/negative-offset-workaround/PaddedTrackManager.hpp"
 #include "../utils/Utils.hpp"
 
 using namespace geode::prelude;
@@ -68,23 +69,9 @@ class $modify(MyFMODAudioEngine, FMODAudioEngine) {
 
         // Negative offset with fix enabled: redirect to padded file
         if (lso::config::shouldDoNegativeOffsetWorkaround(totalOffset)) {
-            // Already a padded file - set padded state and apply remainder
-            if (lso::utils::isFilePadded(path)) {
-                isMusicPadded = true;
-                LOG_MOD_DEBUG("queueStartMusic: padded = true because of path {}", path);
-            }else{
-                // Not a padded file - Redirect to padded file if it exists, otherwise fallback to original.
-                int songKey = getSongID(musicID, path);
-                auto paddedPath = getPaddedPath(songKey, totalOffset,path);
-
-                std::error_code ec;
-                bool exists = std::filesystem::exists(paddedPath, ec);
-                LOG_MOD_DEBUG("queueStartMusic: originalPath={}, paddedPath='{}', exists={}", path, paddedPath, exists);
-                if(exists){
-                    isMusicPadded = true;
-                    newPath = paddedPath.string();
-                };
-            }
+            auto paddedResult = PaddedTrackManager::get().getPaddedResult(totalOffset, path);
+            isMusicPadded = paddedResult.isPadded;
+            newPath = paddedResult.resultingPath;
         }
         
         s_paddedTracks.setPaddedFlag(isMusicPadded, channelID);
@@ -154,22 +141,9 @@ class $modify(MyFMODAudioEngine, FMODAudioEngine) {
 
         // Check padded
         if (lso::config::shouldDoNegativeOffsetWorkaround(totalOffset)) {
-            if (lso::utils::isFilePadded(path)) {
-                isMusicPadded = true;
-                LOG_MOD_DEBUG("loadAndPlayMusic: padded = true because of path {}", path);
-            }else{
-                int songKey = getSongID(musicID, path);
-                auto paddedPath = getPaddedPath(songKey, totalOffset, path);
-
-                std::error_code ec;
-                bool exists = std::filesystem::exists(paddedPath, ec);
-                LOG_MOD_DEBUG("loadAndPlayMusic: originalPath={}, paddedPath='{}', exists={}", path, paddedPath, exists);
-
-                if (exists) {
-                    isMusicPadded = true;
-                    newPath = paddedPath.string();
-                }
-            }
+            auto paddedResult = PaddedTrackManager::get().getPaddedResult(totalOffset, path);
+            isMusicPadded = paddedResult.isPadded;
+            newPath = paddedResult.resultingPath;
         }
 
         s_paddedTracks.setPaddedFlag(isMusicPadded, 0);
