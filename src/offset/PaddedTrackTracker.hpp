@@ -47,16 +47,29 @@ struct PaddedTrackTracker {
         }
     }
 
+    void addPathMap(const gd::string& origPath, const gd::string& mappedPath) {
+        m_original_to_padded_path_map[origPath] = mappedPath;
+    }
+    gd::string getMappedPath(const gd::string& origPath) {
+        std::lock_guard lock(m_mutex);
+        if (m_original_to_padded_path_map.contains(origPath)) {
+            return m_original_to_padded_path_map[origPath];
+        }
+        return origPath;
+    }
+
     // Clear all tracking (e.g. on level exit).
     void clear() {
         std::lock_guard lock(m_mutex);
         m_byChannelID.clear();
+        m_original_to_padded_path_map.clear();
     }
     bool m_isPaddedNow = false;
 
 private:
     mutable std::mutex m_mutex;
     std::unordered_set<int> m_byChannelID;
+    std::map<gd::string, gd::string> m_original_to_padded_path_map;
 };
 
 // Global instance.

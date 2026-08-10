@@ -2,10 +2,12 @@
 
 #include "../offset/OffsetController.hpp"
 #include "../offset/OffsetStorage.hpp"
+#include "../offset/PaddedTrackTracker.hpp"
 #include "../offset/negative-offset-workaround/wavHelper.hpp"
 #include "../offset/negative-offset-workaround/AsyncPregenerator.hpp"
 #include "../utils/Utils.hpp"
 #include "../offset/negative-offset-workaround/CacheStorage.hpp"
+#include "../offset/negative-offset-workaround/PaddedTrackManager.hpp"
 
 using namespace geode::prelude;
 
@@ -59,5 +61,6 @@ class $modify(MyPlayLayer, PlayLayer) {
         int originalOffset = FMODAudioEngine::sharedEngine()->m_musicOffset;
         setTotalOffset(originalOffset);
         setCurrentLevel(nullptr);
+        s_paddedTracks.clear();
     }
 };

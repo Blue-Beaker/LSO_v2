@@ -66,7 +66,7 @@ class $modify(MyFMODAudioEngine, FMODAudioEngine) {
 
         // Negative offset with fix enabled: redirect to padded file
         if (lso::config::shouldDoNegativeOffsetWorkaround(totalOffset)) {
-            auto paddedResult = PaddedTrackManager::get().getPaddedResult(totalOffset, path);
+            auto paddedResult = PaddedTrackManager::get().getPaddedResult(path);
             isMusicPadded = paddedResult.isPadded;
             newPath = paddedResult.resultingPath;
         }
@@ -138,7 +138,7 @@ class $modify(MyFMODAudioEngine, FMODAudioEngine) {
 
         // Check padded
         if (lso::config::shouldDoNegativeOffsetWorkaround(totalOffset)) {
-            auto paddedResult = PaddedTrackManager::get().getPaddedResult(totalOffset, path);
+            auto paddedResult = PaddedTrackManager::get().getPaddedResult(path);
             isMusicPadded = paddedResult.isPadded;
             newPath = paddedResult.resultingPath;
         }

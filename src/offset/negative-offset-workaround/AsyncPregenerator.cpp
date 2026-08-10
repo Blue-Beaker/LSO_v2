@@ -7,6 +7,8 @@
 #include <chrono>
 #include <system_error>
 
+#include "../PaddedTrackTracker.hpp"
+
 using namespace geode::prelude;
 
 // ─── Singleton ──────────────────────────────────────────────────────────────
@@ -265,6 +267,7 @@ std::vector<PregenerateTask> collectPregenerateTasks(GJGameLevel* level, int tot
         auto paddedPath = getPaddedPath(songKey, totalOffset, originalPath);
         std::error_code ec;
         if (std::filesystem::exists(paddedPath, ec)) {
+            s_paddedTracks.addPathMap(originalPath, paddedPath.string());
             continue;
         }
 
