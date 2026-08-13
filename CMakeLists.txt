@@ -15,7 +15,9 @@ file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS src/*.cpp)
 
 # Set up the mod binary
 add_library(${PROJECT_NAME} SHARED ${SOURCES}
-        src/data/OffsetData.hpp)
+        src/data/OffsetData.hpp
+        src/offset/OffsetTracker.cpp
+        src/offset/OffsetTracker.hpp)
 
 if (NOT DEFINED ENV{GEODE_SDK})
     message(FATAL_ERROR "Unable to find Geode SDK! Please define GEODE_SDK environment variable to point to Geode")

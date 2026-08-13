@@ -2,6 +2,7 @@
 
 #include "../offset/OffsetController.hpp"
 #include "../data/OffsetStorage.hpp"
+#include "../offset/OffsetTracker.hpp"
 #include "../utils/Utils.hpp"
 
 using namespace geode::prelude;
@@ -47,5 +48,6 @@ class $modify(MyPlayLayer, PlayLayer) {
         int originalOffset = FMODAudioEngine::sharedEngine()->m_musicOffset;
         setTotalOffset(originalOffset);
         setCurrentLevel(nullptr);
+        OffsetTracker::get().clear();
     }
 };

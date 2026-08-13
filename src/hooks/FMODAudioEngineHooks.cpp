@@ -2,6 +2,7 @@
 
 #include "../offset/OffsetController.hpp"
 #include "../offset/OffsetCalculator.hpp"
+#include "../offset/OffsetTracker.hpp"
 #include "../utils/Utils.hpp"
 
 using namespace geode::prelude;
@@ -48,7 +49,6 @@ class $modify(MyFMODAudioEngine, FMODAudioEngine) {
             );
             return;
         }
-        
         // The new modified values to pass to the original function. We will modify these as needed.
         int newStart = start;
         int newEnd = end;
@@ -62,6 +62,7 @@ class $modify(MyFMODAudioEngine, FMODAudioEngine) {
         }
         
         if(start!=newStart){
+            OffsetTracker::get().setHasOffset(channelID);
             LOG_MOD_DEBUG("queueStartMusic: applying offset {} to start ({} -> {}), noPrepare={}, path='{}', musicID={}", totalOffset, start, newStart, noPrepare, path, musicID);
         }
         FMODAudioEngine::queueStartMusic(
@@ -89,6 +90,7 @@ class $modify(MyFMODAudioEngine, FMODAudioEngine) {
         newStart=offset.adjustedTime;
         
         if(start!=newStart){
+            OffsetTracker::get().setHasOffset(getMusicChannelID(musicID));
             LOG_MOD_DEBUG("startMusic: applying offset ({} -> {}), musicID={}", start, newStart, musicID);
         }
 
@@ -117,6 +119,7 @@ class $modify(MyFMODAudioEngine, FMODAudioEngine) {
         newTime = static_cast<unsigned int>(offset.adjustedTime);
         
         if(time!=newTime){
+            OffsetTracker::get().setHasOffset(getMusicChannelID(musicID));
             LOG_MOD_DEBUG("loadAndPlayMusic: applying offset ({} -> {}), path='{}'", time, newTime, path);
         }
         
@@ -143,8 +146,15 @@ class $modify(MyFMODAudioEngine, FMODAudioEngine) {
             return;
         }
 
+        // If the offset is set before, do not re-set
+        if (OffsetTracker::get().getHasOffset(music.m_channelID)) {
+            FMODAudioEngine::triggerQueuedMusic(music);
+            return;
+        }
+
         auto offset = applyOffset(music.m_start);
         if (offset.adjustedTime != music.m_start) {
+            OffsetTracker::get().setHasOffset(music.m_channelID);
             LOG_MOD_DEBUG("triggerQueuedMusic: applying offset to m_start ({} -> {}), channel={}",
                       music.m_start, offset.adjustedTime, music.m_channelID);
         }
@@ -166,6 +176,7 @@ class $modify(MyFMODAudioEngine, FMODAudioEngine) {
 
         auto offset = applyOffset(ms);
         if (offset.adjustedTime != static_cast<int>(ms)) {
+            OffsetTracker::get().setHasOffset(channel);
             LOG_MOD_DEBUG("setMusicTimeMS: {} -> {} (channel={}, totalOffset={})", ms, offset.adjustedTime, channel, totalOffset);
         }
         FMODAudioEngine::setMusicTimeMS(
