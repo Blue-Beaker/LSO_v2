@@ -25,31 +25,6 @@
 			"type": "bool",
 			"default": true
 		},
-		"padded-cache-path": {
-			"name": "Negative Offset Audio Cache",
-			"description": "Custom directory for storing padded audio cache files for the negative offset workaround. Leave empty to use the mod's save directory",
-			"type": "folder",
-			"default": {
-				"win": "{mod_save_dir}/padded-audio-cache",
-				"mac": "{mod_save_dir}/padded-audio-cache",
-				"android": "{mod_save_dir}/padded-audio-cache"
-			},
-			"control": {
-				"dialog": "save"
-			}
-		},
-		"padded-cache-max-size": {
-			"name": "Max Audio Cache Size (MB)",
-			"description": "Maximum disk space to use for the negative offset audio cache. Oldest files are deleted when exceeded.\n-1 = unlimited, 0 = only current level",
-			"type": "int",
-			"default": 100,
-			"min": -1
-		},
-		"clear-cache": {
-			"name": "Clear Audio Cache",
-			"description": "Delete all cached padded audio files used for the negative offset workaround. Files will be regenerated when needed.",
-			"type": "custom:clear-cache-button"
-		},
 		"debug":{
 			"name": "Debug",
 			"type": "title"
@@ -57,12 +32,6 @@
 		"debug-logging": {
 			"name": "Debug Logging",
 			"description": "Enable detailed offset-related logging for debugging",
-			"type": "bool",
-			"default": false
-		},
-		"debug-beep-in-padding": {
-			"name": "Debug: Beep in Padding",
-			"description": "Add periodic beep tones to verify the negative offset audio is being used. Each beep = 100ms, every 500ms",
 			"type": "bool",
 			"default": false
 		}

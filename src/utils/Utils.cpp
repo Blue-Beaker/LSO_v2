@@ -30,10 +30,6 @@ namespace lso::utils{
         return keys;
     }
 
-    boolean isFilePadded(const gd::string audioFilename){
-        return geode::utils::string::contains(audioFilename, "padded_");
-    }
-
     gd::string getFileName(const gd::string audioPath){
         std::filesystem::path p(audioPath);
         return p.filename().string();

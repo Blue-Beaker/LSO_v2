@@ -2,12 +2,7 @@
 
 #include "../offset/OffsetController.hpp"
 #include "../offset/OffsetStorage.hpp"
-#include "../offset/PaddedTrackTracker.hpp"
-#include "../offset/negative-offset-workaround/wavHelper.hpp"
-#include "../offset/negative-offset-workaround/AsyncPregenerator.hpp"
 #include "../utils/Utils.hpp"
-#include "../offset/negative-offset-workaround/CacheStorage.hpp"
-#include "../offset/negative-offset-workaround/PaddedTrackManager.hpp"
 
 using namespace geode::prelude;
 
@@ -17,12 +12,9 @@ class $modify(MyPlayLayer, PlayLayer) {
     bool init(GJGameLevel* level, bool useReplay, bool dontCreateObjects) {
         if (!PlayLayer::init(level, useReplay, dontCreateObjects))
             return false;
-
-        // Start async pre-generation of padded audio files in the background.
         if (m_level) {
-            startPregenerateForLevel(m_level);
+            setCurrentLevel(m_level);
         }
-
         return true;
     }
 
@@ -41,12 +33,6 @@ class $modify(MyPlayLayer, PlayLayer) {
             setCurrentLevel(m_level);
 
             if (lso::config::shouldDoNegativeOffsetWorkaround(totalOffset)) {
-                auto& pregen = AsyncPregenerator::get();
-                if (pregen.isRunning()) {
-                    LOG_MOD_DEBUG("prepareMusic: waiting for pre-generation...");
-                    pregen.waitAll();
-                    LOG_MOD_DEBUG("prepareMusic: pre-generation done");
-                }
             }
         }
 
@@ -61,6 +47,5 @@ class $modify(MyPlayLayer, PlayLayer) {
         int originalOffset = FMODAudioEngine::sharedEngine()->m_musicOffset;
         setTotalOffset(originalOffset);
         setCurrentLevel(nullptr);
-        s_paddedTracks.clear();
     }
 };

@@ -40,7 +40,7 @@ namespace lso::utils::offset{
         if (totalOffset >= 0) return 0;
         return ((-totalOffset + 999) / 1000) * 1000;
     }
-    inline bool shouldSkipOffset(int totalOffset){
+    inline bool shouldSkipOffset(){
         // When not in a level
         auto* pl = PlayLayer::get();
         if (!pl || !pl->m_level) return true;

@@ -25,20 +25,15 @@ struct OffsetResult {
  *  - Not padded: time += offset, clamped to 0
  *
  * @param timeMs   The original time value in milliseconds
- * @param isPadded Whether the track is using a padded audio file
  * @return OffsetResult with the adjusted time
  */
-OffsetResult applyOffset(int timeMs, bool isPadded = false) {
+OffsetResult applyOffset(int timeMs) {
 
     int totalOffset = getTotalOffset();
     OffsetResult result;
     result.adjustedTime = timeMs;
 
-    if (isPadded) {
-        result.paddedLengthMs = lso::utils::offset::calculatePaddedLength(totalOffset);
-        result.remainder = result.paddedLengthMs + totalOffset;
-        result.adjustedTime = timeMs + result.remainder;
-    } else if (totalOffset != 0) {
+    if (totalOffset != 0) {
         result.adjustedTime = timeMs + totalOffset;
         if (result.adjustedTime < 0) result.adjustedTime = 0;
     }
@@ -49,6 +44,6 @@ OffsetResult applyOffset(int timeMs, bool isPadded = false) {
 /**
  * Overload for unsigned int time values.
  */
-inline OffsetResult applyOffset(unsigned int timeMs, bool isPadded = false) {
-    return applyOffset(static_cast<int>(timeMs), isPadded);
+inline OffsetResult applyOffset(unsigned int timeMs) {
+    return applyOffset(static_cast<int>(timeMs));
 }

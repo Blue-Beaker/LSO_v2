@@ -1,6 +1,5 @@
 #include "OffsetPopup.hpp"
 #include "../offset/OffsetController.hpp"
-#include "../offset/negative-offset-workaround/CacheStorage.hpp"
 #include "../utils/Utils.hpp"
 
 bool OffsetPopup::setup(GJGameLevel* level, OffsetButton* button, int currentOffset) {
@@ -37,17 +36,9 @@ bool OffsetPopup::setup(GJGameLevel* level, OffsetButton* button, int currentOff
     //     menu_selector(OffsetPopup::onCancel)
     // );
 
-    // Delete button
-    auto delBtn = CCMenuItemSpriteExtra::create(
-        CCSprite::createWithSpriteFrameName("GJ_trashBtn_001.png"),
-        this,
-        menu_selector(OffsetPopup::onClearCache)
-    );
-
     auto menu = CCMenu::create();
     menu->addChild(okBtn);
     // menu->addChild(cancelBtn);
-    menu->addChild(delBtn);
     menu->alignItemsHorizontallyWithPadding(20);
     m_mainLayer->addChildAtPosition(menu, Anchor::Center, ccp(0, -50));
 
@@ -80,10 +71,6 @@ void OffsetPopup::onApply(CCObject*) {
 
 void OffsetPopup::onCancel(CCObject*) {
     this->onClose(nullptr);
-}
-
-void OffsetPopup::onClearCache(CCObject*) {
-    promptClearAllCache();
 }
 
 OffsetPopup* OffsetPopup::create(GJGameLevel* level, OffsetButton* button, int currentOffset) {
