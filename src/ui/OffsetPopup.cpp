@@ -51,11 +51,8 @@ void OffsetPopup::onApply(CCObject*) {
     if (result) {
         offset = result.unwrap();
     }
-    OffsetStorage::setOffsetForLevel(m_levelId, offset);
+    OffsetStorage::get().setOffsetForLevel(m_levelId, offset);
     log::debug("Set offset for level {} (resolved) to {}ms", m_levelId, offset);
-
-    // Start async pre-generation for the new offset value
-    startPregenerateForLevel(m_level);
 
     Notification::create(
         fmt::format("Offset set to {}ms for level {}", offset, m_levelId),
@@ -89,7 +86,7 @@ OffsetPopup* OffsetPopup::create(GJGameLevel* level, OffsetButton* button, int c
 // Show the offset popup for a level.
 void showOffsetPopup(GJGameLevel* level, OffsetButton* button) {
     if (!level) return;
-    int currentOffset = OffsetStorage::getOffsetForLevel(lso::utils::getLevelId(level));
+    int currentOffset = OffsetStorage::get().getOffsetForLevel(lso::utils::getLevelId(level));
     auto popup = OffsetPopup::create(level, button, currentOffset);
     popup->show();
 }

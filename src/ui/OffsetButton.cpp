@@ -1,5 +1,5 @@
 #include "OffsetButton.hpp"
-#include "../offset/OffsetStorage.hpp"
+#include "../data/OffsetStorage.hpp"
 
 bool OffsetButton::init(CCObject* target, SEL_MenuHandler selector, int levelId) {
     m_levelId = levelId;
@@ -30,7 +30,7 @@ OffsetButton* OffsetButton::create(CCObject* target, SEL_MenuHandler selector, i
 }
 
 void OffsetButton::updateOffset() {
-    int offset = OffsetStorage::getOffsetForLevel(m_levelId);
+    int offset = OffsetStorage::get().getOffsetForLevel(m_levelId);
     setOffset(offset);
 }
 

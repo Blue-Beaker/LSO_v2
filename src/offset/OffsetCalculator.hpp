@@ -11,10 +11,6 @@ using namespace geode::prelude;
 struct OffsetResult {
     // The adjusted time value with offset applied
     int adjustedTime = 0;
-    // The remainder (paddedLengthMs + offset), used for padded file compensation
-    int remainder = 0;
-    // The padded length (calculated with lso::utils::offset::calculatePaddedLength), used for padded file naming
-    int paddedLengthMs = 0;
 };
 
 /**

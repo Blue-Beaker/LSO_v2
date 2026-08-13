@@ -2,6 +2,8 @@
 
 #include <Geode/Geode.hpp>
 
+#include "OffsetData.hpp"
+
 using namespace geode::prelude;
 
 /**
@@ -14,15 +16,25 @@ using namespace geode::prelude;
  */
 
 class OffsetStorage {
+    OffsetData m_data;
 public:
+
+    static OffsetStorage &get() {
+        static OffsetStorage instance;
+        return instance;
+    }
+
     /**
      * Get the stored offset (in milliseconds) for a given level.
      * Returns 0 if no offset has been set.
      */
-    static int getOffsetForLevel(int levelId);
+    int getOffsetForLevel(int levelId);
 
     /**
      * Set the offset (in milliseconds) for a given level and persist to save data.
      */
-    static void setOffsetForLevel(int levelId, int offset);
+    void setOffsetForLevel(int levelId, int offset);
+
+    void load();
+    void save();
 };

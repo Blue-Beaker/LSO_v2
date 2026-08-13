@@ -1,5 +1,5 @@
 #include "OffsetController.hpp"
-#include "OffsetStorage.hpp"
+#include "../data/OffsetStorage.hpp"
 #include "../utils/Utils.hpp"
 
 // Stores the effective totalOffset (ms) for the current PlayLayer.
@@ -24,11 +24,6 @@ int getTotalOffset() {
     if(s_currentLevel==nullptr){
         return originalOffset;
     }
-    int levelOffset = OffsetStorage::getOffsetForLevel(lso::utils::getLevelId(s_currentLevel));
+    int levelOffset = OffsetStorage::get().getOffsetForLevel(lso::utils::getLevelId(s_currentLevel));
     return originalOffset + levelOffset;
-}
-
-// ─── Public: start pre-generation for a level ───────────────────────────────
-
-void startPregenerateForLevel(GJGameLevel* level) {
 }

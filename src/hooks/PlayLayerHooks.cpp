@@ -1,7 +1,7 @@
 #include <Geode/modify/PlayLayer.hpp>
 
 #include "../offset/OffsetController.hpp"
-#include "../offset/OffsetStorage.hpp"
+#include "../data/OffsetStorage.hpp"
 #include "../utils/Utils.hpp"
 
 using namespace geode::prelude;
@@ -23,7 +23,7 @@ class $modify(MyPlayLayer, PlayLayer) {
             LOG_MOD_DEBUG("BEFORE prepareMusic: m_musicOffset={}", audio->m_musicOffset);
         }
         if (m_level) {
-            int userOffset = OffsetStorage::getOffsetForLevel(lso::utils::getLevelId(m_level));
+            int userOffset = OffsetStorage::get().getOffsetForLevel(lso::utils::getLevelId(m_level));
             int originalOffset = FMODAudioEngine::sharedEngine()->m_musicOffset;
             int totalOffset = originalOffset + userOffset;
 
