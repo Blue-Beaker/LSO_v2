@@ -18,7 +18,6 @@ protected:
     bool setup(GJGameLevel* level, OffsetButton* button, int currentOffset);
     void onApply(CCObject*);
     void onCancel(CCObject*);
-    void onClearCache(CCObject*);
 
 public:
     static OffsetPopup* create(GJGameLevel* level, OffsetButton* button, int currentOffset);

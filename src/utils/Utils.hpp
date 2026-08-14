@@ -25,21 +25,9 @@ namespace lso::utils{
     // @param level The level to collect song keys from.
     // @return A vector of all song keys for the level.
     std::vector<int> getLevelSongKeys(GJGameLevel* level);
-
-    boolean isFilePadded(const gd::string audioFilename);
-
-    gd::string getFileName(const gd::string audioFilename);
-
-    gd::string getFileNameWithoutExtension(const gd::string audioFilename);
 }
 
 namespace lso::utils::offset{
-    // Calculates the padded length (in milliseconds) for a given total offset.
-    // ALL padded length calculations should use this function to ensure consistency.
-    inline int calculatePaddedLength(int totalOffset) {
-        if (totalOffset >= 0) return 0;
-        return ((-totalOffset + 999) / 1000) * 1000;
-    }
     inline bool shouldSkipOffset(){
         // When not in a level
         auto* pl = PlayLayer::get();

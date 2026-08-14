@@ -19,9 +19,6 @@ using namespace geode::prelude;
 void setCurrentLevel(GJGameLevel* currentLevel);
 GJGameLevel* getCurrentLevel();
 // Set total offset for the controller.
-void setTotalOffset(int totalOffset);
+void updateOffsets();
 int getTotalOffset();
-// Start async pre-generation of padded audio files for a level's songs.
-// If generation is already running, this call is silently ignored.
-// Safe to call multiple times - already-cached files are skipped.
-void startPregenerateForLevel(GJGameLevel* level);
+int getCurrentLevelOffset();

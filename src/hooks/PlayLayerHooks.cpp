@@ -24,17 +24,8 @@ class $modify(MyPlayLayer, PlayLayer) {
             LOG_MOD_DEBUG("BEFORE prepareMusic: m_musicOffset={}", audio->m_musicOffset);
         }
         if (m_level) {
-            int userOffset = OffsetStorage::get().getOffsetForLevel(lso::utils::getLevelId(m_level));
-            int originalOffset = FMODAudioEngine::sharedEngine()->m_musicOffset;
-            int totalOffset = originalOffset + userOffset;
-
-            LOG_MOD_DEBUG("prepareMusic: level={}, userOffset={}, originalOffset={}, totalOffset={}", lso::utils::getLevelId(m_level), userOffset, originalOffset, totalOffset);
-
-            setTotalOffset(totalOffset);
             setCurrentLevel(m_level);
-
-            if (lso::config::shouldDoNegativeOffsetWorkaround(totalOffset)) {
-            }
+            updateOffsets();
         }
 
         PlayLayer::prepareMusic(dontWait);
@@ -45,9 +36,10 @@ class $modify(MyPlayLayer, PlayLayer) {
 
     void onExit(){
         PlayLayer::onExit();
-        int originalOffset = FMODAudioEngine::sharedEngine()->m_musicOffset;
-        setTotalOffset(originalOffset);
+        // int originalOffset = FMODAudioEngine::sharedEngine()->m_musicOffset;
+        // setTotalOffset(originalOffset);
         setCurrentLevel(nullptr);
+        updateOffsets();
         OffsetTracker::get().clear();
     }
 };

@@ -35,6 +35,7 @@ void OffsetButton::updateOffset() {
 }
 
 void OffsetButton::setOffset(int offset) {
+    // Remove the existing label
     if (m_offsetLabel) {
         m_offsetLabel->removeFromParent();
         m_offsetLabel = nullptr;
@@ -43,8 +44,9 @@ void OffsetButton::setOffset(int offset) {
     if (offset != 0) {
         auto children = getChildren();
         if (!children || children->count() == 0) return;
-        auto sprite = static_cast<CCSprite*>(children->objectAtIndex(0));
+        auto sprite = dynamic_cast<CCSprite*>(children->objectAtIndex(0));
         if (!sprite) return;
+        // Add the label to the sprite
         m_offsetLabel = CCLabelBMFont::create(
             geode::utils::numToString(offset).c_str(), "bigFont.fnt"
         );

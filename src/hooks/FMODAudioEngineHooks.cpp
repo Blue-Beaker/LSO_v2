@@ -53,17 +53,17 @@ class $modify(MyFMODAudioEngine, FMODAudioEngine) {
         int newStart = start;
         int newEnd = end;
 
-        int totalOffset = getTotalOffset();
+        int offset = getCurrentLevelOffset();
 
         // Because we can't distinguish between queued music that was already prepared (noPrepare=false) and queued music that is being prepared now (noPrepare=true), we only apply the offset to the start time when noPrepare=true. This ensures that we don't double-apply the offset in the case where the music is already prepared.
-        if (totalOffset != 0 && noPrepare) {
+        if (offset != 0 && noPrepare) {
             auto offset = applyOffset(start);
             newStart = offset.adjustedTime;
         }
         
         if(start!=newStart){
             OffsetTracker::get().setHasOffset(channelID);
-            LOG_MOD_DEBUG("queueStartMusic: applying offset {} to start ({} -> {}), noPrepare={}, path='{}', musicID={}", totalOffset, start, newStart, noPrepare, path, musicID);
+            LOG_MOD_DEBUG("queueStartMusic: applying offset {} to start ({} -> {}), noPrepare={}, path='{}', musicID={}", offset, start, newStart, noPrepare, path, musicID);
         }
         FMODAudioEngine::queueStartMusic(
             path, pitch, unknown, volume, loop, newStart, newEnd,
@@ -105,7 +105,6 @@ class $modify(MyFMODAudioEngine, FMODAudioEngine) {
     void loadAndPlayMusic(gd::string path, unsigned int time, int musicID) {
         LOG_MOD_DEBUG("loadAndPlayMusic: path={}, musicID={}", path, musicID);
 
-        int totalOffset = getTotalOffset();
         if (lso::utils::offset::shouldSkipOffset()) {
             LOG_MOD_DEBUG("loadAndPlayMusic: skipping hook because not in a level");
             FMODAudioEngine::loadAndPlayMusic(path, time, musicID);
@@ -167,7 +166,7 @@ class $modify(MyFMODAudioEngine, FMODAudioEngine) {
 
     void setMusicTimeMS(unsigned int ms, bool p1, int channel) {
         LOG_MOD_DEBUG("setMusicTimeMS: channelID={}", channel);
-        int totalOffset = getTotalOffset();
+
         if(lso::utils::offset::shouldSkipOffset()){
             LOG_MOD_DEBUG("setMusicTimeMS: skipping hook because not in a level");
             FMODAudioEngine::setMusicTimeMS(ms, p1, channel);
@@ -177,7 +176,7 @@ class $modify(MyFMODAudioEngine, FMODAudioEngine) {
         auto offset = applyOffset(ms);
         if (offset.adjustedTime != static_cast<int>(ms)) {
             OffsetTracker::get().setHasOffset(channel);
-            LOG_MOD_DEBUG("setMusicTimeMS: {} -> {} (channel={}, totalOffset={})", ms, offset.adjustedTime, channel, totalOffset);
+            LOG_MOD_DEBUG("setMusicTimeMS: {} -> {} (channel={}, levelOffset={}, totalOffset={})", ms, offset.adjustedTime, channel, getCurrentLevelOffset(), getTotalOffset());
         }
         FMODAudioEngine::setMusicTimeMS(
             static_cast<unsigned int>(offset.adjustedTime), p1, channel

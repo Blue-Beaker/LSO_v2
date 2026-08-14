@@ -4,7 +4,7 @@
 
 using namespace geode::prelude;
 
-// A wrapper around the offset icon button that can update its displayed offset value.
+// A wrapper around the offset icon button that displays an offset value and the value can be updated.
 class OffsetButton : public CCMenuItemSpriteExtra {
 protected:
     int m_levelId;
@@ -15,14 +15,9 @@ protected:
 public:
     static OffsetButton* create(CCObject* target, SEL_MenuHandler selector, int levelId);
 
-    /**
-     * Refresh the offset label from OffsetStorage.
-     * Call this after changing the offset externally (e.g. after the popup saves).
-     */
+    // Convenience method to update offset label from the storage
     void updateOffset();
 
-    /**
-     * Set the offset value and update the label immediately.
-     */
+    // Set the offset value and update the label immediately.
     void setOffset(int offset);
 };

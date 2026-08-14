@@ -81,9 +81,7 @@ OffsetPopup* OffsetPopup::create(GJGameLevel* level, OffsetButton* button, int c
     return nullptr;
 }
 
-// ─── Shared helpers ──────────────────────────────────────────────────────────
-
-// Show the offset popup for a level.
+// Show the offset popup for a level, reading stored offset from the storage.
 void showOffsetPopup(GJGameLevel* level, OffsetButton* button) {
     if (!level) return;
     int currentOffset = OffsetStorage::get().getOffsetForLevel(lso::utils::getLevelId(level));

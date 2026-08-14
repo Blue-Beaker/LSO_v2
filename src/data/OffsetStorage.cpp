@@ -5,6 +5,9 @@
 static constexpr auto SAVE_KEY = "level-offsets";
 
 int OffsetStorage::getOffsetForLevel(int levelId) {
+    if (levelId==0) {
+        return 0;
+    }
     if (m_data.m_offsets.contains(levelId)) {
         return m_data.m_offsets[levelId];
     }
@@ -12,6 +15,9 @@ int OffsetStorage::getOffsetForLevel(int levelId) {
 }
 
 void OffsetStorage::setOffsetForLevel(int levelId, int offset) {
+    if (levelId==0) {
+        return;
+    }
     if (offset==0) {
         m_data.m_offsets.erase(levelId);
     }

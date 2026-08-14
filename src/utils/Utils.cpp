@@ -29,14 +29,4 @@ namespace lso::utils{
 
         return keys;
     }
-
-    gd::string getFileName(const gd::string audioPath){
-        std::filesystem::path p(audioPath);
-        return p.filename().string();
-    }
-
-    gd::string getFileNameWithoutExtension(const gd::string audioPath){
-        std::filesystem::path p(audioPath);
-        return p.stem().string();
-    }
 }

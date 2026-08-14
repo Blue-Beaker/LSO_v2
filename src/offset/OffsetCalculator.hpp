@@ -1,6 +1,8 @@
 #pragma once
 
 #include <Geode/Geode.hpp>
+
+#include "OffsetController.hpp"
 #include "../utils/Utils.hpp"
 
 using namespace geode::prelude;
@@ -16,21 +18,19 @@ struct OffsetResult {
 /**
  * Applies the current song offset to a given time value (in milliseconds).
  *
- * Behaviour depends on whether the track uses a padded audio file:
- *  - Padded (Negative Offset with workaround): time += (padding+offset) (skip the prepended silence)
- *  - Not padded: time += offset, clamped to 0
+ * time += offset, clamped to 0
  *
  * @param timeMs   The original time value in milliseconds
  * @return OffsetResult with the adjusted time
  */
 OffsetResult applyOffset(int timeMs) {
 
-    int totalOffset = getTotalOffset();
+    int offset = getCurrentLevelOffset();
     OffsetResult result;
     result.adjustedTime = timeMs;
 
-    if (totalOffset != 0) {
-        result.adjustedTime = timeMs + totalOffset;
+    if (offset != 0) {
+        result.adjustedTime = timeMs + offset;
         if (result.adjustedTime < 0) result.adjustedTime = 0;
     }
 
