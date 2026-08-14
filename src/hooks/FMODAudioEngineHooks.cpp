@@ -3,6 +3,7 @@
 #include "../offset/OffsetController.hpp"
 #include "../offset/OffsetCalculator.hpp"
 #include "../offset/OffsetTracker.hpp"
+#include "../offset/QueuedMusicTracker.hpp"
 #include "../utils/Utils.hpp"
 
 using namespace geode::prelude;
@@ -49,26 +50,36 @@ class $modify(MyFMODAudioEngine, FMODAudioEngine) {
             );
             return;
         }
-        // The new modified values to pass to the original function. We will modify these as needed.
+
+        QueuedMusicTracker::get().clearChannel(channelID);
+
         int newStart = start;
         int newEnd = end;
 
+        // The new modified values to pass to the original function. We will modify these as needed.
         int offset = getCurrentLevelOffset();
-
-        // Because we can't distinguish between queued music that was already prepared (noPrepare=false) and queued music that is being prepared now (noPrepare=true), we only apply the offset to the start time when noPrepare=true. This ensures that we don't double-apply the offset in the case where the music is already prepared.
+        // When noPrepare=false (PREP), do not apply offset at this time
         if (offset != 0 && noPrepare) {
-            auto offset = applyOffset(start);
-            newStart = offset.adjustedTime;
+            newStart = start+offset;
+            newEnd = end+offset;
         }
         
         if(start!=newStart){
             OffsetTracker::get().setHasOffset(channelID);
             LOG_MOD_DEBUG("queueStartMusic: applying offset {} to start ({} -> {}), noPrepare={}, path='{}', musicID={}", offset, start, newStart, noPrepare, path, musicID);
         }
-        FMODAudioEngine::queueStartMusic(
-            path, pitch, unknown, volume, loop, newStart, newEnd,
-            fadeIn, fadeOut, musicID, p10, channelID, noPrepare, dontReset
-        );
+        // if (lso::config::isNegativeOffsetFixEnabled() && newStart<0) {
+        //     FMODAudioEngine::queueStartMusic(
+        //         path, pitch, unknown, volume, loop, 0, newEnd,
+        //         fadeIn, fadeOut, musicID, p10, channelID, noPrepare, dontReset
+        //     );
+        //     pauseAndQueueChannel(channelID,-newStart);
+        // }else {
+            FMODAudioEngine::queueStartMusic(
+                path, pitch, unknown, volume, loop, newStart, newEnd,
+                fadeIn, fadeOut, musicID, p10, channelID, noPrepare, dontReset
+            );
+        // }
     }
 
     // Called by PlayLayer::startMusic() on practice mode respawn / resetLevel.
@@ -82,12 +93,11 @@ class $modify(MyFMODAudioEngine, FMODAudioEngine) {
             FMODAudioEngine::startMusic(start, end, fadeIn, fadeOut, loop, musicID, noResume, dontReset);
             return;
         }
+        int channelID = FMODAudioEngine::getMusicChannelID(musicID);
+        QueuedMusicTracker::get().clearChannel(channelID);
 
-        int newStart = start;
-
-        auto offset = applyOffset(start);
-
-        newStart=offset.adjustedTime;
+        int offset = getCurrentLevelOffset();
+        int newStart=start+offset;
         
         if(start!=newStart){
             OffsetTracker::get().setHasOffset(getMusicChannelID(musicID));
@@ -111,11 +121,14 @@ class $modify(MyFMODAudioEngine, FMODAudioEngine) {
             return;
         }
 
+        int channelID = FMODAudioEngine::getMusicChannelID(musicID);
+        QueuedMusicTracker::get().clearChannel(channelID);
+
         unsigned int newTime = time;
 
         // Apply offset
-        auto offset = applyOffset(static_cast<int>(time));
-        newTime = static_cast<unsigned int>(offset.adjustedTime);
+        int offset = getCurrentLevelOffset();
+        newTime = time+offset;
         
         if(time!=newTime){
             OffsetTracker::get().setHasOffset(getMusicChannelID(musicID));
@@ -145,41 +158,72 @@ class $modify(MyFMODAudioEngine, FMODAudioEngine) {
             return;
         }
 
+        QueuedMusicTracker::get().clearChannel(music.m_channelID);
         // If the offset is set before, do not re-set
-        if (OffsetTracker::get().getHasOffset(music.m_channelID)) {
-            FMODAudioEngine::triggerQueuedMusic(music);
-            return;
+        int newStart = music.m_start;
+        int newEnd = music.m_end;
+
+        bool has_offset = OffsetTracker::get().getHasOffset(music.m_channelID);
+        if (!has_offset) {
+            int offset = getCurrentLevelOffset();
+            newStart = music.m_start+offset;
+            newEnd = music.m_end+offset;
         }
 
-        auto offset = applyOffset(music.m_start);
-        if (offset.adjustedTime != music.m_start) {
+        if (newStart != music.m_start) {
             OffsetTracker::get().setHasOffset(music.m_channelID);
-            LOG_MOD_DEBUG("triggerQueuedMusic: applying offset to m_start ({} -> {}), channel={}",
-                      music.m_start, offset.adjustedTime, music.m_channelID);
         }
-        music.m_start = offset.adjustedTime;
-        FMODAudioEngine::triggerQueuedMusic(music);
+        if (has_offset || newStart != music.m_start) {
+            LOG_MOD_DEBUG("triggerQueuedMusic: applying offset to m_start ({} -> {}), channel={}",
+                      music.m_start, newStart, music.m_channelID);
+        }
+
+        if (lso::config::isNegativeOffsetFixEnabled() && newStart<0) {
+            music.m_start = 0;
+            FMODAudioEngine::triggerQueuedMusic(music);
+            pauseAndQueueChannel(music.m_channelID,-newStart);
+        }else {
+            music.m_start = newStart;
+            FMODAudioEngine::triggerQueuedMusic(music);
+        }
     }
 
     // ─── setMusicTimeMS ─────────────────────────────────────────────────────
     // Seeks music to a given time. Used by checkpoint restoration, pause, etc.
 
-    void setMusicTimeMS(unsigned int ms, bool p1, int channel) {
-        LOG_MOD_DEBUG("setMusicTimeMS: channelID={}", channel);
+    void setMusicTimeMS(unsigned int ms, bool p1, int musicID) {
+        LOG_MOD_DEBUG("setMusicTimeMS: musicID={}", musicID);
 
         if(lso::utils::offset::shouldSkipOffset()){
             LOG_MOD_DEBUG("setMusicTimeMS: skipping hook because not in a level");
-            FMODAudioEngine::setMusicTimeMS(ms, p1, channel);
+            FMODAudioEngine::setMusicTimeMS(ms, p1, musicID);
             return;
         }
 
-        auto offset = applyOffset(ms);
-        if (offset.adjustedTime != static_cast<int>(ms)) {
-            OffsetTracker::get().setHasOffset(channel);
-            LOG_MOD_DEBUG("setMusicTimeMS: {} -> {} (channel={}, levelOffset={}, totalOffset={})", ms, offset.adjustedTime, channel, getCurrentLevelOffset(), getTotalOffset());
+        int channelID = FMODAudioEngine::getMusicChannelID(musicID);
+        QueuedMusicTracker::get().clearChannel(channelID);
+
+        int offset = getCurrentLevelOffset();
+        int newStart=ms+offset;
+
+        if (offset!=0) {
+            OffsetTracker::get().setHasOffset(channelID);
+            LOG_MOD_DEBUG("setMusicTimeMS: {} -> {} (channelID={}, levelOffset={}, totalOffset={})", ms, newStart, channelID, getCurrentLevelOffset(), getTotalOffset());
         }
-        FMODAudioEngine::setMusicTimeMS(
-            static_cast<unsigned int>(offset.adjustedTime), p1, channel
-        );
+        if (lso::config::isNegativeOffsetFixEnabled() && newStart<0) {
+            FMODAudioEngine::setMusicTimeMS(
+                0, p1, musicID
+                );
+            pauseAndQueueChannel(channelID,-newStart);
+        }else {
+            FMODAudioEngine::setMusicTimeMS(
+                newStart, p1, musicID
+            );
+        }
+    }
+
+    void pauseAndQueueChannel(int channel, int timeRemainingMs) {
+        FMODAudioEngine::pauseMusic(channel);
+        QueuedMusicTracker::get().queueChannel(channel,timeRemainingMs);
     }
 };

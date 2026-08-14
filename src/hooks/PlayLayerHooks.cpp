@@ -3,6 +3,7 @@
 #include "../offset/OffsetController.hpp"
 #include "../data/OffsetStorage.hpp"
 #include "../offset/OffsetTracker.hpp"
+#include "../offset/QueuedMusicTracker.hpp"
 #include "../utils/Utils.hpp"
 
 using namespace geode::prelude;
@@ -41,5 +42,12 @@ class $modify(MyPlayLayer, PlayLayer) {
         setCurrentLevel(nullptr);
         updateOffsets();
         OffsetTracker::get().clear();
+        QueuedMusicTracker::get().clear();
+    }
+
+    void postUpdate(float deltaSeconds) {
+        PlayLayer::postUpdate(deltaSeconds);
+        // LOG_MOD_DEBUG("postUpdate: dt={}", deltaSeconds);
+        QueuedMusicTracker::get().tickFloatSeconds(deltaSeconds);
     }
 };

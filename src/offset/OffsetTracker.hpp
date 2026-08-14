@@ -3,7 +3,7 @@
 class OffsetTracker {
     std::unordered_set<int> m_channels_with_offset;
     public:
-    static OffsetTracker get() {
+    static OffsetTracker& get() {
         static OffsetTracker tracker;
         return tracker;
     }
