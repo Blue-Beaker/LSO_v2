@@ -33,6 +33,8 @@ class $modify(MyFMODAudioEngine, FMODAudioEngine) {
         );
     }
 
+    // musicID - channel set in song trigger, musicID = -1-(channel), or initial channel (musicID=0)
+    // channelID - maybe an internal ID that increments every time?
     void queueStartMusic(gd::string path, float pitch,
                          float unknown, float volume, bool loop,
                          int start, int end, int fadeIn,
@@ -190,6 +192,7 @@ class $modify(MyFMODAudioEngine, FMODAudioEngine) {
 
     // ─── setMusicTimeMS ─────────────────────────────────────────────────────
     // Seeks music to a given time. Used by checkpoint restoration, pause, etc.
+    // Also in PlayLayer::prepareMusic
 
     void setMusicTimeMS(unsigned int ms, bool p1, int musicID) {
         LOG_MOD_DEBUG("setMusicTimeMS: musicID={}", musicID);
@@ -222,8 +225,10 @@ class $modify(MyFMODAudioEngine, FMODAudioEngine) {
         }
     }
 
+    // Convenience method
     void pauseAndQueueChannel(int channel, int timeRemainingMs) {
         FMODAudioEngine::pauseMusic(channel);
         QueuedMusicTracker::get().queueChannel(channel,timeRemainingMs);
     }
+
 };

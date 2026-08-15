@@ -2,8 +2,10 @@
 
 struct QueuedMusic {
     int timeRemainingMs;
+    bool paused = false;
     int tick(int tickLengthMs) {
-        return timeRemainingMs-tickLengthMs;
+        timeRemainingMs=timeRemainingMs-tickLengthMs;
+        return timeRemainingMs;
     }
     bool shouldStart() {
         return timeRemainingMs<=0;
@@ -24,11 +26,15 @@ public:
         return instance;
     }
     void tickMs(int tickLengthMs);
+
+    bool hasChannel(int channelID);
+
     void tickFloatSeconds(float tickLengthSeconds);
 
     // Called when a channel is played, paused, or stopped, clears queued music on the channel
     void clearChannel(int channel);
     void queueChannel(int channel, int timeRemainingMs);
+    void pauseAll();
 
     void clear();
 };

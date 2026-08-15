@@ -13,16 +13,18 @@ void QueuedMusicTracker::tickFloatSeconds(float tickLengthSeconds) {
 }
 
 void QueuedMusicTracker::tickMs(int tickLengthMs) {
+    // Make sure to pause
+    pauseAll();
     // LOG_MOD_DEBUG("tickMs {}, queued={}", tickLengthMs, m_queuedMusic.size());
     std::set<int> channelsToRemove;
 
     for (auto [channelID, music] : m_queuedMusic) {
-        m_queuedMusic[channelID].timeRemainingMs=music.tick(tickLengthMs);
-        // LOG_MOD_DEBUG("music.tick channel={}, tickLengthMs={}, timeRemainingMs={}", channelID, tickLengthMs, music.timeRemainingMs);
+        m_queuedMusic[channelID].tick(tickLengthMs);
+        LOG_MOD_DEBUG("music.tick channel={}, tickLengthMs={}, timeRemainingMs={}", channelID, tickLengthMs, music.timeRemainingMs);
         if (music.shouldStart()) {
             // FMODAudioEngine::get()->setMusicTimeMS(music.getStartOffset(),true,p.first);
             FMODAudioEngine::get()->resumeMusic(channelID);
-            // LOG_MOD_DEBUG("resuming queued music in channel {}", channelID);
+            LOG_MOD_DEBUG("resuming queued music in channel {}", channelID);
             channelsToRemove.insert(channelID);
         }
     }
@@ -30,6 +32,10 @@ void QueuedMusicTracker::tickMs(int tickLengthMs) {
     for (const int channelID : channelsToRemove) {
         m_queuedMusic.erase(channelID);
     }
+}
+
+bool QueuedMusicTracker::hasChannel(int channelID) {
+    return m_queuedMusic.contains(channelID);
 }
 
 void QueuedMusicTracker::clearChannel(int channel){
@@ -41,6 +47,13 @@ void QueuedMusicTracker::queueChannel(int channel, int timeRemainingMs) {
     m_queuedMusic[channel]=QueuedMusic(timeRemainingMs);
     LOG_MOD_DEBUG("Queued music in channel {}, time={}, queuedCount={}", channel, timeRemainingMs, m_queuedMusic.size());
 }
+
+void QueuedMusicTracker::pauseAll() {
+    for (auto [channelID, music] : m_queuedMusic) {
+        FMODAudioEngine::get()->pauseMusic(channelID);
+    }
+}
+
 void QueuedMusicTracker::clear() {
     m_queuedMusic.clear();
 }

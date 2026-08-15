@@ -22,7 +22,7 @@ class $modify(MyPlayLayer, PlayLayer) {
 
     void prepareMusic(bool dontWait) {
         if (auto* audio = FMODAudioEngine::sharedEngine()) {
-            LOG_MOD_DEBUG("BEFORE prepareMusic: m_musicOffset={}", audio->m_musicOffset);
+            LOG_MOD_DEBUG("BEFORE prepareMusic: m_musicOffset={}, dontWait={}", audio->m_musicOffset, dontWait);
         }
         if (m_level) {
             setCurrentLevel(m_level);
@@ -31,14 +31,27 @@ class $modify(MyPlayLayer, PlayLayer) {
 
         PlayLayer::prepareMusic(dontWait);
         if (auto* audio = FMODAudioEngine::sharedEngine()) {
-            LOG_MOD_DEBUG("AFTER prepareMusic: m_musicOffset={}", audio->m_musicOffset);
+            LOG_MOD_DEBUG("AFTER prepareMusic: m_musicOffset={}, dontWait={}", audio->m_musicOffset, dontWait);
         }
     }
 
-    void onExit(){
-        PlayLayer::onExit();
-        // int originalOffset = FMODAudioEngine::sharedEngine()->m_musicOffset;
-        // setTotalOffset(originalOffset);
+    void startMusic() {
+        LOG_MOD_DEBUG("PlayLayer::startMusic")
+        PlayLayer::startMusic();
+        QueuedMusicTracker::get().pauseAll();
+    }
+
+    void resume() {
+        setCurrentLevel(m_level);
+        updateOffsets();
+        LOG_MOD_DEBUG("PlayLayer::resume");
+        PlayLayer::resume();
+
+        QueuedMusicTracker::get().pauseAll();
+    }
+    void onQuit(){
+        PlayLayer::onQuit();
+        LOG_MOD_DEBUG("PlayLayer::onQuit");
         setCurrentLevel(nullptr);
         updateOffsets();
         OffsetTracker::get().clear();
@@ -47,7 +60,8 @@ class $modify(MyPlayLayer, PlayLayer) {
 
     void postUpdate(float deltaSeconds) {
         PlayLayer::postUpdate(deltaSeconds);
-        // LOG_MOD_DEBUG("postUpdate: dt={}", deltaSeconds);
-        QueuedMusicTracker::get().tickFloatSeconds(deltaSeconds);
+        if (PlayLayer::isGameplayActive()) {
+            QueuedMusicTracker::get().tickFloatSeconds(deltaSeconds);
+        }
     }
 };
