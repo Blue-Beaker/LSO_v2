@@ -45,8 +45,8 @@ class $modify(MyFMODAudioEngine, FMODAudioEngine) {
 
         LOG_MOD_DEBUG("queueStartMusic: path={}, musicID={}, channelID={}",path,musicID,channelID);
         // When not in a level, don't apply any offset
-        if (lso::utils::offset::shouldSkipOffset()) {
-            LOG_MOD_DEBUG("queueStartMusic: skipping hook because not in a level");
+        if (QueuedMusicTracker::get().getCallingInTracker() || lso::utils::offset::shouldSkipOffset()) {
+            LOG_MOD_DEBUG("queueStartMusic: skipping hook");
             FMODAudioEngine::queueStartMusic(
                 path, pitch, unknown, volume, loop, start, end,
                 fadeIn, fadeOut, musicID, p10, channelID, noPrepare, dontReset
@@ -91,8 +91,8 @@ class $modify(MyFMODAudioEngine, FMODAudioEngine) {
                     bool loop, int musicID, bool noResume, bool dontReset) {
         LOG_MOD_DEBUG("startMusic: musicID={}",musicID);
 
-        if (lso::utils::offset::shouldSkipOffset()) {
-            LOG_MOD_DEBUG("startMusic: skipping hook because not in a level");
+        if (QueuedMusicTracker::get().getCallingInTracker() || lso::utils::offset::shouldSkipOffset()) {
+            LOG_MOD_DEBUG("startMusic: skipping hook");
             FMODAudioEngine::startMusic(start, end, fadeIn, fadeOut, loop, musicID, noResume, dontReset);
             return;
         }
@@ -118,8 +118,8 @@ class $modify(MyFMODAudioEngine, FMODAudioEngine) {
     void loadAndPlayMusic(gd::string path, unsigned int time, int musicID) {
         LOG_MOD_DEBUG("loadAndPlayMusic: path={}, musicID={}", path, musicID);
 
-        if (lso::utils::offset::shouldSkipOffset()) {
-            LOG_MOD_DEBUG("loadAndPlayMusic: skipping hook because not in a level");
+        if (QueuedMusicTracker::get().getCallingInTracker() || lso::utils::offset::shouldSkipOffset()) {
+            LOG_MOD_DEBUG("loadAndPlayMusic: skipping hook");
             FMODAudioEngine::loadAndPlayMusic(path, time, musicID);
             return;
         }
@@ -198,8 +198,8 @@ class $modify(MyFMODAudioEngine, FMODAudioEngine) {
     void setMusicTimeMS(unsigned int ms, bool p1, int musicID) {
         LOG_MOD_DEBUG("setMusicTimeMS: musicID={}", musicID);
 
-        if(lso::utils::offset::shouldSkipOffset()){
-            LOG_MOD_DEBUG("setMusicTimeMS: skipping hook because not in a level");
+        if(QueuedMusicTracker::get().getCallingInTracker() || lso::utils::offset::shouldSkipOffset()){
+            LOG_MOD_DEBUG("setMusicTimeMS: skipping hook");
             FMODAudioEngine::setMusicTimeMS(ms, p1, musicID);
             return;
         }

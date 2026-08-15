@@ -16,6 +16,9 @@ void QueuedMusicTracker::tickMs(int tickLengthMs) {
     // LOG_MOD_DEBUG("tickMs {}, queued={}", tickLengthMs, m_queuedMusic.size());
     std::set<int> channelsToRemove;
 
+    std::lock_guard lock(m_mutex);
+
+    m_callingInTracker=true;
     for (auto [channelID, m] : m_queuedMusic) {
         auto& music = m_queuedMusic[channelID];
 
@@ -38,6 +41,7 @@ void QueuedMusicTracker::tickMs(int tickLengthMs) {
     for (const int channelID : channelsToRemove) {
         m_queuedMusic.erase(channelID);
     }
+    m_callingInTracker=false;
 }
 
 bool QueuedMusicTracker::hasChannel(int channelID) {
@@ -45,21 +49,27 @@ bool QueuedMusicTracker::hasChannel(int channelID) {
 }
 
 void QueuedMusicTracker::clearChannel(int channel){
+    std::lock_guard lock(m_mutex);
     m_queuedMusic.erase(channel);
     LOG_MOD_DEBUG("Cleared queued music in channel {}", channel);
 }
 
 void QueuedMusicTracker::queueChannel(int channel, int musicID, int timeRemainingMs) {
+    std::lock_guard lock(m_mutex);
     m_queuedMusic[channel]=QueuedMusic(timeRemainingMs, musicID);
     LOG_MOD_DEBUG("Queued music in channel {}, time={}, queuedCount={}", channel, timeRemainingMs, m_queuedMusic.size());
 }
 
 void QueuedMusicTracker::pauseAll() {
+    std::lock_guard lock(m_mutex);
     for (auto [channelID, music] : m_queuedMusic) {
+        m_callingInTracker=true;
         FMODAudioEngine::get()->pauseMusic(channelID);
+        m_callingInTracker=false;
     }
 }
 
 void QueuedMusicTracker::clear() {
+    std::lock_guard lock(m_mutex);
     m_queuedMusic.clear();
 }

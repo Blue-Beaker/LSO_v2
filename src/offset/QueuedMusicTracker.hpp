@@ -21,6 +21,8 @@ class QueuedMusicTracker {
     std::map<int, QueuedMusic> m_queuedMusic;
     // Remaining partial milliseconds from last ticking
     float m_partialMs = 0;
+    std::mutex m_mutex;
+    bool m_callingInTracker = false;
 public:
     static QueuedMusicTracker& get() {
         static QueuedMusicTracker instance;
@@ -29,6 +31,10 @@ public:
     void tickMs(int tickLengthMs);
 
     bool hasChannel(int channelID);
+
+    bool getCallingInTracker() {
+        return m_callingInTracker;
+    }
 
     void tickFloatSeconds(float tickLengthSeconds);
 
