@@ -112,7 +112,7 @@ class $modify(MyFMODAudioEngine, FMODAudioEngine) {
             // Compensate the global offset
             music.m_start = -m_musicOffset;
             FMODAudioEngine::triggerQueuedMusic(music);
-            pauseAndQueueChannel(music.m_channelID,music.m_musicID,-newStart);
+            pauseAndQueueChannel(music.m_channelID,music.m_musicID,-newStart-m_musicOffset);
         }else {
             music.m_start = newStart;
             music.m_end = newEnd;
@@ -144,7 +144,7 @@ class $modify(MyFMODAudioEngine, FMODAudioEngine) {
         if (lso::config::isNegativeOffsetFixEnabled() && newStart+m_musicOffset<0) {
             // Compensate the global offset
             FMODAudioEngine::setMusicTimeMS(-m_musicOffset, p1, musicID);
-            pauseAndQueueChannel(channelID,musicID,-newStart);
+            pauseAndQueueChannel(channelID,musicID,-newStart-m_musicOffset);
         }else {
             FMODAudioEngine::setMusicTimeMS(
                 newStart, p1, musicID
@@ -155,6 +155,9 @@ class $modify(MyFMODAudioEngine, FMODAudioEngine) {
     // Convenience method
     void pauseAndQueueChannel(int const channelID, int const musicID, int const timeRemainingMs) {
         FMODAudioEngine::pauseMusic(channelID);
+        auto* channel = channelForChannelID(channelID);
+        // Also set mute
+        channel->setMute(true);
         QueuedMusicTracker::get().queueChannel(channelID, musicID,timeRemainingMs);
     }
 

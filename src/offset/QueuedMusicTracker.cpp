@@ -19,22 +19,22 @@ void QueuedMusicTracker::tickMs(int const tickLengthMs) {
     std::lock_guard lock(mutex);
 
     callingInTracker=true;
+
+    FMODAudioEngine * engine = FMODAudioEngine::get();
     for (auto& [channelID, m] : queuedMusic) {
         auto& music = m;
 
-        // Make sure to pause
-        // TODO: find out when to pause the audio correctly, instead of invoking this on every step (very inefficient)
-        // TODO: also, starting music is not paused correctly. find out how to pause this as well.
-        // if (!music.paused) {
-            FMODAudioEngine::get()->pauseMusic(channelID);
-            music.paused = true;
-        // }
+        auto* channel = engine->channelForChannelID(channelID);
 
         music.tick(tickLengthMs);
         // LOG_MOD_DEBUG("music.tick channel={}, tickLengthMs={}, timeRemainingMs={}", channelID, tickLengthMs, music.timeRemainingMs);
         if (music.shouldStart()) {
-            FMODAudioEngine::get()->setMusicTimeMS(music.getStartOffset(),true,music.musicID);
-            FMODAudioEngine::get()->resumeMusic(channelID);
+            // Unmute the channel
+            channel->setMute(false);
+
+            engine->setMusicTimeMS(music.getStartOffset()-engine->m_musicOffset,true,music.musicID);
+            engine->resumeMusic(channelID);
+
             LOG_MOD_DEBUG("resuming queued music in channel {}", channelID);
             channelsToRemove.insert(channelID);
         }

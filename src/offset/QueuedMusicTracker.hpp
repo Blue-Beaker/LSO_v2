@@ -3,7 +3,6 @@
 struct QueuedMusic {
     int timeRemainingMs;
     int musicID;
-    bool paused = false;
     int tick(int const tickLengthMs) {
         timeRemainingMs=timeRemainingMs-tickLengthMs;
         return timeRemainingMs;
