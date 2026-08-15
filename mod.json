@@ -1,0 +1,48 @@
+{
+	"geode": "5.7.1",
+	"gd": {
+		"win": "2.2081",
+		"android": "2.2081",
+		"mac": "2.2081",
+		"ios": "2.2081"
+	},
+	"id": "bluebeaker.level_song_offset",
+	"name": "Level Song Offset",
+	"version": "v1.0.0",
+	"developer": "BlueBeaker",
+	"description": "",
+	"links": {
+		"source": "https://github.com/Blue-Beaker/LSO_v2"
+	},
+	"settings": {
+		"negative-offset-title":{
+			"name": "Negative Offset Workaround",
+			"type": "title"
+		},
+		"negative-offset-fix": {
+			"name": "Enable Negative Offset Workaround",
+			"description": "Automatically use workaround for the bug with negative offset",
+			"type": "bool",
+			"default": true
+		},
+		"debug":{
+			"name": "Debug",
+			"type": "title"
+		},
+		"debug-logging": {
+			"name": "Debug Logging",
+			"description": "Enable detailed offset-related logging for debugging",
+			"type": "bool",
+			"default": false
+		}
+	},
+	"resources": {
+		"sprites": [
+			"resources/offset-icon.png"
+		]
+	},
+	"dependencies": {
+		"geode.node-ids": ">=v1.23.3",
+		"cvolton.level-id-api": ">=v2.0.0"
+	}
+}
