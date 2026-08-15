@@ -13,13 +13,18 @@ void QueuedMusicTracker::tickFloatSeconds(float tickLengthSeconds) {
 }
 
 void QueuedMusicTracker::tickMs(int tickLengthMs) {
-    // Make sure to pause
-    pauseAll();
     // LOG_MOD_DEBUG("tickMs {}, queued={}", tickLengthMs, m_queuedMusic.size());
     std::set<int> channelsToRemove;
 
     for (auto [channelID, m] : m_queuedMusic) {
         auto& music = m_queuedMusic[channelID];
+
+        // Make sure to pause
+        // if (!music.paused) {
+            FMODAudioEngine::get()->pauseMusic(channelID);
+            music.paused = true;
+        // }
+
         music.tick(tickLengthMs);
         // LOG_MOD_DEBUG("music.tick channel={}, tickLengthMs={}, timeRemainingMs={}", channelID, tickLengthMs, music.timeRemainingMs);
         if (music.shouldStart()) {

@@ -19,7 +19,9 @@ add_library(${PROJECT_NAME} SHARED ${SOURCES}
         src/offset/OffsetTracker.cpp
         src/offset/OffsetTracker.hpp
         src/offset/QueuedMusicTracker.cpp
-        src/offset/QueuedMusicTracker.hpp)
+        src/offset/QueuedMusicTracker.hpp
+        src/hooks/GJBaseGameLayerHooks.cpp
+        src/hooks/GJBaseGameLayerHooks.cpp)
 
 if (NOT DEFINED ENV{GEODE_SDK})
     message(FATAL_ERROR "Unable to find Geode SDK! Please define GEODE_SDK environment variable to point to Geode")

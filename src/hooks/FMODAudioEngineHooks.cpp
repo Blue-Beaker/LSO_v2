@@ -10,26 +10,27 @@ using namespace geode::prelude;
 
 class $modify(MyFMODAudioEngine, FMODAudioEngine) {
     // Use Late priority so jukebox (and other mods) can process the call first
+    // We need to hook later than other mods to apply offsets to their replaced start time
     static void onModify(auto& self) {
         (void)self.setHookPriorityPost(
             "FMODAudioEngine::queueStartMusic",
-            Priority::Late
+            Priority::VeryLate
         );
         (void)self.setHookPriorityPost(
             "FMODAudioEngine::startMusic",
-            Priority::Late
+            Priority::VeryLate
         );
         (void)self.setHookPriorityPost(
             "FMODAudioEngine::loadAndPlayMusic",
-            Priority::Late
+            Priority::VeryLate
         );
         (void)self.setHookPriorityPost(
             "FMODAudioEngine::triggerQueuedMusic",
-            Priority::Late
+            Priority::VeryLate
         );
         (void)self.setHookPriorityPost(
             "FMODAudioEngine::setMusicTimeMS",
-            Priority::Late
+            Priority::VeryLate
         );
     }
 

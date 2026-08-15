@@ -57,11 +57,11 @@ class $modify(MyPlayLayer, PlayLayer) {
         OffsetTracker::get().clear();
         QueuedMusicTracker::get().clear();
     }
-
-    void postUpdate(float deltaSeconds) {
-        PlayLayer::postUpdate(deltaSeconds);
-        if (PlayLayer::isGameplayActive()) {
-            QueuedMusicTracker::get().tickFloatSeconds(deltaSeconds);
-        }
-    }
+    //
+    // void postUpdate(float deltaSeconds) {
+    //     PlayLayer::postUpdate(deltaSeconds);
+    //     if (PlayLayer::isGameplayActive()) {
+    //         QueuedMusicTracker::get().tickFloatSeconds(deltaSeconds);
+    //     }
+    // }
 };
