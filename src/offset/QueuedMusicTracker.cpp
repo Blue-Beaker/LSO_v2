@@ -64,9 +64,13 @@ void QueuedMusicTracker::queueChannel(int channel, int musicID, int timeRemainin
 
 void QueuedMusicTracker::pauseAll() {
     std::lock_guard lock(mutex);
+    FMODAudioEngine * engine = FMODAudioEngine::get();
     for (auto& [channelID, music] : queuedMusic) {
         callingInTracker=true;
-        FMODAudioEngine::get()->pauseMusic(channelID);
+        // Also set mute
+        auto* channel = engine->channelForChannelID(channelID);
+        channel->setMute(true);
+        engine->pauseMusic(channelID);
         callingInTracker=false;
     }
 }

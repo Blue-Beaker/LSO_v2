@@ -13,6 +13,7 @@ class $modify(MyPlayLayer, PlayLayer) {
             return false;
         if (m_level) {
             OffsetController::get().setCurrentLevel(m_level);
+            OffsetController::get().updateOffsets();
         }
         return true;
     }
@@ -21,10 +22,6 @@ class $modify(MyPlayLayer, PlayLayer) {
         if (auto* audio = FMODAudioEngine::sharedEngine()) {
             LOG_MOD_DEBUG("BEFORE prepareMusic: m_musicOffset={}, dontWait={}", audio->m_musicOffset, dontWait);
         }
-        if (m_level) {
-            OffsetController::get().setCurrentLevel(m_level);
-            OffsetController::get().updateOffsets();
-        }
 
         PlayLayer::prepareMusic(dontWait);
         if (auto* audio = FMODAudioEngine::sharedEngine()) {
@@ -32,18 +29,19 @@ class $modify(MyPlayLayer, PlayLayer) {
         }
     }
 
-    void startMusic() {
-        LOG_MOD_DEBUG("PlayLayer::startMusic")
-        PlayLayer::startMusic();
-        QueuedMusicTracker::get().pauseAll();
-    }
+    // void startMusic() {
+    //     LOG_MOD_DEBUG("PlayLayer::startMusic")
+    //     PlayLayer::startMusic();
+    // }
+    //
 
+
+// TODO(FIXTHIS): When set offset to negative, Trigger a song trigger (not prep) and pause before the song actually plays, then resume, the music will start immediately, ignoring our queue.
     void resume() {
         OffsetController::get().setCurrentLevel(m_level);
         OffsetController::get().updateOffsets();
         LOG_MOD_DEBUG("PlayLayer::resume");
         PlayLayer::resume();
-
         QueuedMusicTracker::get().pauseAll();
     }
     void onQuit(){

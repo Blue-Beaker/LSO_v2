@@ -13,6 +13,7 @@ void OffsetController::setCurrentLevel(GJGameLevel* level){
     }else {
         currentLevelId=0;
     }
+    LOG_MOD_DEBUG("OffsetController::setCurrentLevel: level={}", currentLevelId);
 }
 
 void OffsetController::updateOffsets() {

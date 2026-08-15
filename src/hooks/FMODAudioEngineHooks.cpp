@@ -125,8 +125,10 @@ class $modify(MyFMODAudioEngine, FMODAudioEngine) {
     void setMusicTimeMS(unsigned int ms, bool p1, int musicID) {
         LOG_MOD_DEBUG("setMusicTimeMS: musicID={}", musicID);
 
-        if(QueuedMusicTracker::get().getCallingInTracker() || lso::utils::offset::shouldSkipOffset()){
-            LOG_MOD_DEBUG("setMusicTimeMS: skipping hook");
+        if(bool const inTracker = QueuedMusicTracker::get().getCallingInTracker() || lso::utils::offset::shouldSkipOffset()){
+            if (!inTracker) {
+                LOG_MOD_DEBUG("setMusicTimeMS: skipping hook");
+            }
             FMODAudioEngine::setMusicTimeMS(ms, p1, musicID);
             return;
         }
