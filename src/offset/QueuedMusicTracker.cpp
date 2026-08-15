@@ -18,11 +18,12 @@ void QueuedMusicTracker::tickMs(int tickLengthMs) {
     // LOG_MOD_DEBUG("tickMs {}, queued={}", tickLengthMs, m_queuedMusic.size());
     std::set<int> channelsToRemove;
 
-    for (auto [channelID, music] : m_queuedMusic) {
-        m_queuedMusic[channelID].tick(tickLengthMs);
-        LOG_MOD_DEBUG("music.tick channel={}, tickLengthMs={}, timeRemainingMs={}", channelID, tickLengthMs, music.timeRemainingMs);
+    for (auto [channelID, m] : m_queuedMusic) {
+        auto& music = m_queuedMusic[channelID];
+        music.tick(tickLengthMs);
+        // LOG_MOD_DEBUG("music.tick channel={}, tickLengthMs={}, timeRemainingMs={}", channelID, tickLengthMs, music.timeRemainingMs);
         if (music.shouldStart()) {
-            // FMODAudioEngine::get()->setMusicTimeMS(music.getStartOffset(),true,p.first);
+            FMODAudioEngine::get()->setMusicTimeMS(music.getStartOffset(),true,music.musicID);
             FMODAudioEngine::get()->resumeMusic(channelID);
             LOG_MOD_DEBUG("resuming queued music in channel {}", channelID);
             channelsToRemove.insert(channelID);
@@ -43,8 +44,8 @@ void QueuedMusicTracker::clearChannel(int channel){
     LOG_MOD_DEBUG("Cleared queued music in channel {}", channel);
 }
 
-void QueuedMusicTracker::queueChannel(int channel, int timeRemainingMs) {
-    m_queuedMusic[channel]=QueuedMusic(timeRemainingMs);
+void QueuedMusicTracker::queueChannel(int channel, int musicID, int timeRemainingMs) {
+    m_queuedMusic[channel]=QueuedMusic(timeRemainingMs, musicID);
     LOG_MOD_DEBUG("Queued music in channel {}, time={}, queuedCount={}", channel, timeRemainingMs, m_queuedMusic.size());
 }
 

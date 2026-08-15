@@ -75,7 +75,7 @@ class $modify(MyFMODAudioEngine, FMODAudioEngine) {
         //         path, pitch, unknown, volume, loop, 0, newEnd,
         //         fadeIn, fadeOut, musicID, p10, channelID, noPrepare, dontReset
         //     );
-        //     pauseAndQueueChannel(channelID,-newStart);
+        //     pauseAndQueueChannel(channelID,musicID,-newStart);
         // }else {
             FMODAudioEngine::queueStartMusic(
                 path, pitch, unknown, volume, loop, newStart, newEnd,
@@ -183,7 +183,7 @@ class $modify(MyFMODAudioEngine, FMODAudioEngine) {
         if (lso::config::isNegativeOffsetFixEnabled() && newStart<0) {
             music.m_start = 0;
             FMODAudioEngine::triggerQueuedMusic(music);
-            pauseAndQueueChannel(music.m_channelID,-newStart);
+            pauseAndQueueChannel(music.m_channelID,music.m_musicID,-newStart);
         }else {
             music.m_start = newStart;
             FMODAudioEngine::triggerQueuedMusic(music);
@@ -217,7 +217,7 @@ class $modify(MyFMODAudioEngine, FMODAudioEngine) {
             FMODAudioEngine::setMusicTimeMS(
                 0, p1, musicID
                 );
-            pauseAndQueueChannel(channelID,-newStart);
+            pauseAndQueueChannel(channelID,musicID,-newStart);
         }else {
             FMODAudioEngine::setMusicTimeMS(
                 newStart, p1, musicID
@@ -226,9 +226,9 @@ class $modify(MyFMODAudioEngine, FMODAudioEngine) {
     }
 
     // Convenience method
-    void pauseAndQueueChannel(int channel, int timeRemainingMs) {
-        FMODAudioEngine::pauseMusic(channel);
-        QueuedMusicTracker::get().queueChannel(channel,timeRemainingMs);
+    void pauseAndQueueChannel(int channelID, int musicID, int timeRemainingMs) {
+        FMODAudioEngine::pauseMusic(channelID);
+        QueuedMusicTracker::get().queueChannel(channelID, musicID,timeRemainingMs);
     }
 
 };
