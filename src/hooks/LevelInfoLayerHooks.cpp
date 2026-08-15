@@ -7,12 +7,11 @@
 
 using namespace geode::prelude;
 
-// ─── LevelInfoLayer hook ────────────────────────────────────────────────────
-
 class $modify(OffsetLevelInfoLayer, LevelInfoLayer) {
 	struct Fields {
 		OffsetButton* offsetBtn;
 	};
+    // Add the offset button to LevelInfoLayer
     bool init(GJGameLevel* level, bool challenge) {
         if (!LevelInfoLayer::init(level, challenge))
             return false;

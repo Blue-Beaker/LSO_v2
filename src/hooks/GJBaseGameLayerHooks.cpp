@@ -8,8 +8,6 @@
 
 using namespace geode::prelude;
 
-// ─── Hook: GJBaseGameLayer ────────────────────────────────────────────────────────
-
 class $modify(GJBaseGameLayerHook, GJBaseGameLayer) {
     void processMoveActionsStep(float deltaSeconds, bool visibleFrame) {
         GJBaseGameLayer::processMoveActionsStep(deltaSeconds, visibleFrame);

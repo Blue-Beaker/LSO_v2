@@ -145,13 +145,8 @@ class $modify(MyFMODAudioEngine, FMODAudioEngine) {
         );
     }
 
-    // ─── triggerQueuedMusic ─────────────────────────────────────────────────
-    // Activates a queued music entry. Called when:
-    //   queueStartMusic(noPrepare=false) finishes prep: m_start already set
-    //   Song trigger directly constructs FMODQueuedMusic: m_start is raw
-    //
-    // We cannot distinguish between these, so we always apply offset.
-
+    // Triggers a queued music. usually called after queueStartMusic.
+    // To avoid the offset from being applied twice, use OffsetTracker to tell whether the channel has set offset before.
     void triggerQueuedMusic(FMODQueuedMusic music) {
         LOG_MOD_DEBUG("triggerQueuedMusic: musicID={}, channelID={}", music.m_musicID,music.m_channelID);
 
@@ -191,10 +186,8 @@ class $modify(MyFMODAudioEngine, FMODAudioEngine) {
         }
     }
 
-    // ─── setMusicTimeMS ─────────────────────────────────────────────────────
     // Seeks music to a given time. Used by checkpoint restoration, pause, etc.
     // Also in PlayLayer::prepareMusic
-
     void setMusicTimeMS(unsigned int ms, bool p1, int musicID) {
         LOG_MOD_DEBUG("setMusicTimeMS: musicID={}", musicID);
 

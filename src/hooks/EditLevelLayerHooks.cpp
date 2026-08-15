@@ -11,6 +11,8 @@ class $modify(OffsetEditLevelLayer, EditLevelLayer) {
 	struct Fields {
 		OffsetButton* offsetBtn = nullptr;
 	};
+    // Add the offset button to EditLevelLayer
+    // Warning: the offset only works when "playing" the level, and does not work in the editor.
     bool init(GJGameLevel* level) {
         if (!EditLevelLayer::init(level)) return false;
 

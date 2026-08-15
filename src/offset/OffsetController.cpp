@@ -2,16 +2,13 @@
 #include "../data/OffsetStorage.hpp"
 #include "../utils/Utils.hpp"
 
-// Stores the effective totalOffset (ms) for the current PlayLayer.
-// Set in prepareMusic, read by getAudioFileName, queueStartMusic,
-// and setMusicTimeMS hooks.
-// totalOffset = original GameManager::m_timeOffset + user offset.
 int s_currentTotalOffset = 0;
 int s_currentLevelOffset = 0;
-
 GJGameLevel* s_currentLevel = nullptr;
 int s_currentLevelId = 0;
 
+// Set current level, to track the offset
+// Set to nullptr to clear the offset
 void setCurrentLevel(GJGameLevel* currentLevel){
     s_currentLevel=currentLevel;
     if (currentLevel!=nullptr) {
