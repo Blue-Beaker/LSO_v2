@@ -1,4 +1,7 @@
 # LevelSongOffset
+### UNFINISHED YET, but the main functionality is already available, download from actions if you want to try
+Known problem: When set offset to negative, Trigger a song trigger (not prep) and pause before the song actually plays, then resume, the music will start immediately, ignoring the offset.
+
 
 Level-specific song offset changer.  
 
