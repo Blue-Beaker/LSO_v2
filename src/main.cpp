@@ -8,6 +8,9 @@ using namespace geode::prelude;
 
 // Load/Save stored offsets at startup/exiting
 $on_game(ModsLoaded) {
+    #ifdef RELWITHDEBINFO_BUILD
+    geode::log::info("Running with RelWithDebInfo build. Debug logs are shown.");
+    #endif
     OffsetStorage::get().load();
 }
 $on_game(Exiting) {

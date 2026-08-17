@@ -28,12 +28,6 @@
 		"debug":{
 			"name": "Debug",
 			"type": "title"
-		},
-		"debug-logging": {
-			"name": "Debug Logging",
-			"description": "Enable detailed offset-related logging for debugging",
-			"type": "bool",
-			"default": false
 		}
 	},
 	"resources": {

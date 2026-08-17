@@ -141,7 +141,7 @@ class $modify(MyFMODAudioEngine, FMODAudioEngine) {
 
         if (offset!=0) {
             OffsetTracker::get().setHasOffset(channelID);
-            LOG_MOD_DEBUG("setMusicTimeMS: {} -> {} (channelID={}, levelOffset={})", ms, newStart, channelID, OffsetController::get().getCurrentLevelOffset());
+            LOG_MOD_DEBUG("setMusicTimeMS: {} -> {} (channelID={}, levelOffset={})", ms, newStart, channelID, offset);
         }
         if (lso::config::isNegativeOffsetFixEnabled() && newStart+m_musicOffset<0) {
             // Compensate the global offset

@@ -19,9 +19,11 @@ namespace lso::config{
     inline bool isNegativeOffsetFixEnabled() {
         return Mod::get()->getSettingValue<bool>("negative-offset-fix");
     }
-    inline bool isDebugLoggingEnabled() {
-        return Mod::get()->getSettingValue<bool>("debug-logging");
-    }
 }
 
-#define LOG_MOD_DEBUG(...) if (lso::config::isDebugLoggingEnabled()){geode::log::info(__VA_ARGS__);};
+#ifdef RELWITHDEBINFO_BUILD
+#define LOG_MOD_DEBUG(...) {geode::log::info(__VA_ARGS__);};
+#endif
+#ifndef LOG_MOD_DEBUG
+#define LOG_MOD_DEBUG(...) {};
+#endif

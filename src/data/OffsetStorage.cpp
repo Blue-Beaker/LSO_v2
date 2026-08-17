@@ -28,9 +28,10 @@ void OffsetStorage::setOffsetForLevel(int const levelId, int const offsetMs) {
 void OffsetStorage::load() {
     auto const newData = Mod::get()->getSavedValue<OffsetData>(SAVE_KEY, offsetData);
     offsetData.offsets=newData.offsets;
-    LOG_MOD_DEBUG("Loaded Offsets: {}", newData.offsets);
+    geode::log::info("Loaded Offsets: {}", newData.offsets);
 
 }
 void OffsetStorage::save() const {
     Mod::get()->setSavedValue<OffsetData>(SAVE_KEY, offsetData);
+    geode::log::info("Saved Offsets: {}", offsetData.offsets);
 }
